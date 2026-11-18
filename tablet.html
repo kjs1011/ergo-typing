@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f4f7f9">
+<title>태블릿 원본 | 자료 입력 자세 실험</title>
+<style>*{box-sizing:border-box}
+:root{color-scheme:light;font-family:Inter,"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;color:#18293a;background:#f4f7f9;line-height:1.55;font-synthesis:none}
+body{margin:0}
+a{color:#185485}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.55}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #2b81c2;outline-offset:3px}
+h1,h2,p{margin:0}
+h1{font-size:clamp(1.7rem,3.3vw,2.65rem);line-height:1.22;letter-spacing:-.045em}
+h2{font-size:1.13rem;letter-spacing:-.025em}
+small,.muted{color:#455d70}
+.shell{width:min(1160px,calc(100% - 40px));margin-inline:auto}
+.top{background:white;border-bottom:1px solid #dfe6ec}
+.topline{min-height:62px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:inline-flex;align-items:center;gap:10px;color:inherit;text-decoration:none;font-weight:800;letter-spacing:-.03em}
+.brandmark{display:inline-block;width:20px;height:19px;border:2px solid #185485;border-radius:4px;background:linear-gradient(to right,transparent 41%,#185485 41%,#185485 53%,transparent 53%)}
+.course{color:#496276;font-size:.82rem;white-space:nowrap}
+main{padding:26px 0 48px}
+.card{background:#fff;border:1px solid #dce6ed;border-radius:16px;padding:24px;box-shadow:0 8px 22px #253d5410}
+.intro{display:grid;grid-template-columns:1.08fr .92fr;gap:22px;padding-top:6vh}
+.lead{margin-top:12px;color:#455d70}
+.start{padding:32px}
+.start form{margin-top:22px}
+.steps{padding:28px;display:grid;align-content:center;gap:18px}
+.steps ol{margin:0;padding-left:24px;color:#30495d}
+.steps li+li{margin-top:10px}
+.stephead{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:12px}
+.stephead h1{font-size:clamp(1.2rem,2.4vw,1.85rem)}
+.phase{font-size:.88rem;color:#496276;white-space:nowrap}
+.board{display:grid;grid-template-columns:minmax(0,45fr) minmax(0,55fr);border-radius:16px;border:1px solid #dce6ed;background:#fff;overflow:hidden;min-height:450px;box-shadow:0 8px 22px #253d5410}
+.source,.work{padding:16px 21px;min-width:0}
+.source{background:#eff5fa;border-right:1px solid #dce6ed}
+.source.is-black{background:#000;border-right:0}
+.source h2{margin-bottom:8px}
+.source table{width:100%;border-collapse:collapse;border:1px solid #d7e1eb;background:#fff;font-size:clamp(.82rem,1.4vw,1rem);line-height:1.22}
+.source th,.source td{padding:5px 11px;text-align:left;border-bottom:1px solid #e4ebf2}
+.source th{background:#e8f0f7;font-weight:800}
+.source td:last-child{font-family:"Courier Prime",Consolas,monospace;letter-spacing:.08em;width:43%;font-weight:700}
+.work{display:flex;flex-direction:column}
+.work h2+*{margin-top:8px}
+.form-rows{display:grid;gap:5px;margin:9px 0 12px}
+.field-row{display:grid;grid-template-columns:minmax(105px,.9fr) minmax(110px,1.1fr);gap:8px;align-items:center}
+.field-row input,.number input,.score select{background:#fff;border:1px solid #9fb3c2;border-radius:7px;padding:6px 9px;width:100%;color:#18293a}
+.field-row input{font-family:Consolas,monospace;height:37px}
+.number{display:block;max-width:278px}
+.number input{margin-top:5px}
+.number small{display:block;margin-top:5px}
+.primary,.secondary{border:1px solid #185485;border-radius:8px;padding:8px 15px;min-height:42px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-weight:750}
+.primary{background:#185485;color:white}
+.primary:hover:enabled{background:#124370}
+.secondary{background:white;color:#185485}
+.secondary:hover{background:#eef4fa}
+.actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px}
+.setup-note{margin:5px 0 9px;color:#354c5e}
+.timer{color:#1a537d;font-family:Consolas,monospace;font-size:1.38rem;font-weight:800;border:1px solid #bdd3e4;background:#eaf4fc;border-radius:8px;padding:1px 10px;min-width:70px;text-align:center;line-height:1.5}
+.timer.low{color:#8d321f;background:#fff1e8;border-color:#efcab9}
+.question{max-width:780px;margin-inline:auto}
+.question h1,.done h1{margin-bottom:9px}
+.question fieldset{padding:0;border:0;margin:14px 0}
+.question legend{padding:0;font-weight:800;margin-bottom:6px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.choice{display:flex;gap:7px;align-items:center;border:1px solid #d2dfe8;border-radius:8px;padding:5px 8px;background:#f8fbfe}
+.choice:has(input:checked){border-color:#185485;background:#eaf4fc}
+.choice input{accent-color:#185485}
+.scores{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 13px}
+.score{display:grid;grid-template-columns:minmax(70px,.9fr) minmax(100px,1.1fr);align-items:center;gap:8px;font-size:.9rem}
+.score select{min-height:34px}
+.result{width:100%;border-collapse:collapse;margin-top:16px}
+.result th,.result td{border-bottom:1px solid #dce6ed;padding:8px 10px;text-align:left}
+.done{max-width:790px;margin:3vh auto}
+.status{min-height:1.6em;color:#185485;font-size:.9rem;margin-top:8px}
+.error{color:#a42b24;margin-top:8px;font-size:.9rem}
+.access-code{display:inline-block;margin:4px 0 1px;padding:6px 12px;border-radius:8px;border:1px solid #bdd3e4;background:#eaf4fc;color:#18486d;font:800 1.3rem/1.35 Consolas,monospace;letter-spacing:.08em}
+.tablet-shell{width:min(700px,calc(100% - 28px));margin-inline:auto;padding:clamp(10px,3vh,28px) 0}
+.tablet-shell .actions{align-items:end}
+.tablet-source table{width:100%;border-collapse:collapse;background:white;border:1px solid #d7e1eb;font-size:clamp(.88rem,2.4vw,1.2rem)}
+.tablet-source th,.tablet-source td{text-align:left;border-bottom:1px solid #dce6ed;padding:clamp(2px,1vh,8px) 14px;line-height:1.26}
+.tablet-source th{background:#e8f0f7}
+.tablet-source td:last-child{width:40%;font:700 1.05em/1.25 Consolas,monospace;letter-spacing:.08em}
+.tablet-source button{margin-top:12px}
+[hidden]{display:none!important}
+@media(max-width:690px){.shell{width:calc(100% - 22px)}.intro{grid-template-columns:1fr;padding-top:0;gap:12px}.start,.steps,.card{padding:17px}.source,.work{padding:10px 8px}.source th,.source td{padding:5px 4px;overflow-wrap:anywhere}.field-row{grid-template-columns:1fr;gap:1px}.field-row input{height:30px}.scores{grid-template-columns:1fr}.phase{font-size:.72rem}.course{font-size:.7rem}.stephead{gap:5px}.result th,.result td{padding:5px;font-size:.8rem}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main class="tablet-shell">
+  <section class="card" id="tablet-entry">
+    <h1>태블릿 원본</h1>
+    <p class="lead">노트북의 준비 화면에 나온 원본 코드를 입력해 주세요.</p>
+    <form id="tablet-form" class="actions">
+      <label class="number">원본 코드<input name="code" placeholder="예: AB3X92-X" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" required></label>
+      <button class="primary" type="submit">원본 열기</button>
+    </form>
+    <p class="error" id="tablet-error" role="alert"></p>
+  </section>
+  <section class="tablet-source" id="tablet-source" hidden>
+    <div class="stephead"><h1 id="tablet-title">원본</h1><span class="phase" id="tablet-code"></span></div>
+    <table><thead><tr><th scope="col">품목명</th><th scope="col">코드</th></tr></thead><tbody id="tablet-rows"></tbody></table>
+    <button class="secondary" type="button" id="tablet-reset">다른 원본 열기</button>
+  </section>
+</main>
+<script>const sourceData = (() => {
+  const original = {"X":[["공책","B7R3"],["색연필","K4M7"],["가위","D8S6"],["복사용지","T3P8"],["수정테이프","G5H2"],["종이컵","V6C9"],["포스트잇","F2W4"],["네임펜","M8Z5"],["지퍼백","R9D2"],["클립","S4V6"],["스티커","N3G8"],["물티슈","P7F5"]],"Y":[["수첩","H4V8"],["형광펜","C7R2"],["집게","K9G5"],["색종이팩","W6M3"],["네임스티커","P2D7"],["나무젓가락","Z4B6"],["메모카드","T8N2"],["보드펜","G3F9"],["고무줄","Y5S4"],["압정","D2K8"],["파일철","V7P3"],["휴지통","R6H5"]],"practice":[["연습용 봉투","H5N7"]]};
+  const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits = '23456789';
+  const alphabet = digits + letters;
+  const legacySeed = 'LEGACY';
+  const version = 1;
+  const pairPattern = new RegExp('^([' + alphabet + ']{6})-?([XY])$');
+
+  function newSeed() {
+    const bytes = new Uint8Array(6);
+    let seed;
+    do {
+      crypto.getRandomValues(bytes);
+      seed = Array.from(bytes, byte => alphabet[byte % alphabet.length]).join('');
+    } while (seed === legacySeed);
+    return seed;
+  }
+
+  function parsePair(value) {
+    const match = String(value).trim().toUpperCase().match(pairPattern);
+    return match ? { seed: match[1], set: match[2] } : null;
+  }
+
+  function generator(seed) {
+    let state = 2166136261;
+    for (const char of `v${version}:${seed}`) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
+    if (!state) state = 1;
+    return () => {
+      state ^= state << 13;
+      state ^= state >>> 17;
+      state ^= state << 5;
+      return state >>> 0;
+    };
+  }
+
+  function materialsFor(seed) {
+    if (seed === legacySeed) return original;
+    const next = generator(seed);
+    const pick = text => text[next() % text.length];
+    const used = new Set();
+    const materials = { practice: original.practice };
+    for (const set of ['X', 'Y']) {
+      materials[set] = original[set].map(([item]) => {
+        let code;
+        do {
+          code = pick(letters) + pick(digits) + pick(letters) + pick(digits);
+        } while (used.has(code) || code[0] === code[2] || code[1] === code[3]);
+        used.add(code);
+        return [item, code];
+      });
+    }
+    return materials;
+  }
+
+  return { newSeed, parsePair, materialsFor, legacySeed, version, practice: original.practice };
+})();
+
+(() => {
+  'use strict';
+
+  const form = document.getElementById('tablet-form');
+  const entry = document.getElementById('tablet-entry');
+  const outline = document.getElementById('tablet-source');
+  const error = document.getElementById('tablet-error');
+  const rows = document.getElementById('tablet-rows');
+
+  function openSource(value) {
+    const pair = sourceData.parsePair(value);
+    if (!pair) {
+      error.textContent = '노트북에 표시된 여섯 글자와 X 또는 Y를 확인해 주세요.';
+      return;
+    }
+    const code = pair.seed + '-' + pair.set;
+    document.getElementById('tablet-title').textContent = '원본 ' + pair.set;
+    document.getElementById('tablet-code').textContent = code;
+    rows.replaceChildren(...sourceData.materialsFor(pair.seed)[pair.set].map(values => {
+      const row = document.createElement('tr');
+      for (const value of values) {
+        const cell = document.createElement('td');
+        cell.textContent = value;
+        row.append(cell);
+      }
+      return row;
+    }));
+    error.textContent = '';
+    entry.hidden = true;
+    outline.hidden = false;
+  }
+
+  function resetEntry() {
+    entry.hidden = false;
+    outline.hidden = true;
+    form.reset();
+    error.textContent = '';
+  }
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    openSource(form.elements.code.value);
+  });
+  document.getElementById('tablet-reset').addEventListener('click', () => {
+    resetEntry();
+    const url = new URL(location.href);
+    if (url.searchParams.has('code')) {
+      url.searchParams.delete('code');
+      try {
+        history.replaceState(null, '', url.href);
+      } catch {
+        location.replace(url.href);
+      }
+    }
+    form.elements.code.focus();
+  });
+  window.addEventListener('pageshow', event => {
+    if (event.persisted && !new URLSearchParams(location.search).get('code')) resetEntry();
+  });
+  const initialCode = new URLSearchParams(location.search).get('code');
+  if (initialCode) openSource(initialCode);
+})();
+</script>
+</body>
+</html>

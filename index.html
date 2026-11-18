@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="태블릿과 노트북에서 원본을 읽고 코드를 입력하는 인간공학실험">
+<meta name="theme-color" content="#f4f7f9">
+<title>자료 입력 자세 실험</title>
+<style>*{box-sizing:border-box}
+:root{color-scheme:light;font-family:Inter,"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;color:#18293a;background:#f4f7f9;line-height:1.55;font-synthesis:none}
+body{margin:0}
+a{color:#185485}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:default;opacity:.55}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #2b81c2;outline-offset:3px}
+h1,h2,p{margin:0}
+h1{font-size:clamp(1.7rem,3.3vw,2.65rem);line-height:1.22;letter-spacing:-.045em}
+h2{font-size:1.13rem;letter-spacing:-.025em}
+small,.muted{color:#455d70}
+.shell{width:min(1160px,calc(100% - 40px));margin-inline:auto}
+.top{background:white;border-bottom:1px solid #dfe6ec}
+.topline{min-height:62px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:inline-flex;align-items:center;gap:10px;color:inherit;text-decoration:none;font-weight:800;letter-spacing:-.03em}
+.brandmark{display:inline-block;width:20px;height:19px;border:2px solid #185485;border-radius:4px;background:linear-gradient(to right,transparent 41%,#185485 41%,#185485 53%,transparent 53%)}
+.course{color:#496276;font-size:.82rem;white-space:nowrap}
+main{padding:26px 0 48px}
+.card{background:#fff;border:1px solid #dce6ed;border-radius:16px;padding:24px;box-shadow:0 8px 22px #253d5410}
+.intro{display:grid;grid-template-columns:1.08fr .92fr;gap:22px;padding-top:6vh}
+.lead{margin-top:12px;color:#455d70}
+.start{padding:32px}
+.start form{margin-top:22px}
+.steps{padding:28px;display:grid;align-content:center;gap:18px}
+.steps ol{margin:0;padding-left:24px;color:#30495d}
+.steps li+li{margin-top:10px}
+.stephead{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:12px}
+.stephead h1{font-size:clamp(1.2rem,2.4vw,1.85rem)}
+.phase{font-size:.88rem;color:#496276;white-space:nowrap}
+.board{display:grid;grid-template-columns:minmax(0,45fr) minmax(0,55fr);border-radius:16px;border:1px solid #dce6ed;background:#fff;overflow:hidden;min-height:450px;box-shadow:0 8px 22px #253d5410}
+.source,.work{padding:16px 21px;min-width:0}
+.source{background:#eff5fa;border-right:1px solid #dce6ed}
+.source.is-black{background:#000;border-right:0}
+.source h2{margin-bottom:8px}
+.source table{width:100%;border-collapse:collapse;border:1px solid #d7e1eb;background:#fff;font-size:clamp(.82rem,1.4vw,1rem);line-height:1.22}
+.source th,.source td{padding:5px 11px;text-align:left;border-bottom:1px solid #e4ebf2}
+.source th{background:#e8f0f7;font-weight:800}
+.source td:last-child{font-family:"Courier Prime",Consolas,monospace;letter-spacing:.08em;width:43%;font-weight:700}
+.work{display:flex;flex-direction:column}
+.work h2+*{margin-top:8px}
+.form-rows{display:grid;gap:5px;margin:9px 0 12px}
+.field-row{display:grid;grid-template-columns:minmax(105px,.9fr) minmax(110px,1.1fr);gap:8px;align-items:center}
+.field-row input,.number input,.score select{background:#fff;border:1px solid #9fb3c2;border-radius:7px;padding:6px 9px;width:100%;color:#18293a}
+.field-row input{font-family:Consolas,monospace;height:37px}
+.number{display:block;max-width:278px}
+.number input{margin-top:5px}
+.number small{display:block;margin-top:5px}
+.primary,.secondary{border:1px solid #185485;border-radius:8px;padding:8px 15px;min-height:42px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-weight:750}
+.primary{background:#185485;color:white}
+.primary:hover:enabled{background:#124370}
+.secondary{background:white;color:#185485}
+.secondary:hover{background:#eef4fa}
+.actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px}
+.setup-note{margin:5px 0 9px;color:#354c5e}
+.timer{color:#1a537d;font-family:Consolas,monospace;font-size:1.38rem;font-weight:800;border:1px solid #bdd3e4;background:#eaf4fc;border-radius:8px;padding:1px 10px;min-width:70px;text-align:center;line-height:1.5}
+.timer.low{color:#8d321f;background:#fff1e8;border-color:#efcab9}
+.question{max-width:780px;margin-inline:auto}
+.question h1,.done h1{margin-bottom:9px}
+.question fieldset{padding:0;border:0;margin:14px 0}
+.question legend{padding:0;font-weight:800;margin-bottom:6px}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.choice{display:flex;gap:7px;align-items:center;border:1px solid #d2dfe8;border-radius:8px;padding:5px 8px;background:#f8fbfe}
+.choice:has(input:checked){border-color:#185485;background:#eaf4fc}
+.choice input{accent-color:#185485}
+.scores{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 13px}
+.score{display:grid;grid-template-columns:minmax(70px,.9fr) minmax(100px,1.1fr);align-items:center;gap:8px;font-size:.9rem}
+.score select{min-height:34px}
+.result{width:100%;border-collapse:collapse;margin-top:16px}
+.result th,.result td{border-bottom:1px solid #dce6ed;padding:8px 10px;text-align:left}
+.done{max-width:790px;margin:3vh auto}
+.status{min-height:1.6em;color:#185485;font-size:.9rem;margin-top:8px}
+.error{color:#a42b24;margin-top:8px;font-size:.9rem}
+.access-code{display:inline-block;margin:4px 0 1px;padding:6px 12px;border-radius:8px;border:1px solid #bdd3e4;background:#eaf4fc;color:#18486d;font:800 1.3rem/1.35 Consolas,monospace;letter-spacing:.08em}
+.tablet-shell{width:min(700px,calc(100% - 28px));margin-inline:auto;padding:clamp(10px,3vh,28px) 0}
+.tablet-shell .actions{align-items:end}
+.tablet-source table{width:100%;border-collapse:collapse;background:white;border:1px solid #d7e1eb;font-size:clamp(.88rem,2.4vw,1.2rem)}
+.tablet-source th,.tablet-source td{text-align:left;border-bottom:1px solid #dce6ed;padding:clamp(2px,1vh,8px) 14px;line-height:1.26}
+.tablet-source th{background:#e8f0f7}
+.tablet-source td:last-child{width:40%;font:700 1.05em/1.25 Consolas,monospace;letter-spacing:.08em}
+.tablet-source button{margin-top:12px}
+[hidden]{display:none!important}
+@media(max-width:690px){.shell{width:calc(100% - 22px)}.intro{grid-template-columns:1fr;padding-top:0;gap:12px}.start,.steps,.card{padding:17px}.source,.work{padding:10px 8px}.source th,.source td{padding:5px 4px;overflow-wrap:anywhere}.field-row{grid-template-columns:1fr;gap:1px}.field-row input{height:30px}.scores{grid-template-columns:1fr}.phase{font-size:.72rem}.course{font-size:.7rem}.stephead{gap:5px}.result th,.result td{padding:5px;font-size:.8rem}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="shell topline"><a class="brand" href="./index.html" aria-label="자료 입력 자세 실험 처음 화면"><span aria-hidden="true" class="brandmark"></span> 자료 입력 자세 실험</a><span class="course">인간공학실험 6조</span></div>
+</header>
+<main class="shell" id="app"></main>
+<noscript>실험을 시작하려면 브라우저에서 자바스크립트를 켜 주세요.</noscript>
+<script>const sourceData = (() => {
+  const original = {"X":[["공책","B7R3"],["색연필","K4M7"],["가위","D8S6"],["복사용지","T3P8"],["수정테이프","G5H2"],["종이컵","V6C9"],["포스트잇","F2W4"],["네임펜","M8Z5"],["지퍼백","R9D2"],["클립","S4V6"],["스티커","N3G8"],["물티슈","P7F5"]],"Y":[["수첩","H4V8"],["형광펜","C7R2"],["집게","K9G5"],["색종이팩","W6M3"],["네임스티커","P2D7"],["나무젓가락","Z4B6"],["메모카드","T8N2"],["보드펜","G3F9"],["고무줄","Y5S4"],["압정","D2K8"],["파일철","V7P3"],["휴지통","R6H5"]],"practice":[["연습용 봉투","H5N7"]]};
+  const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits = '23456789';
+  const alphabet = digits + letters;
+  const legacySeed = 'LEGACY';
+  const version = 1;
+  const pairPattern = new RegExp('^([' + alphabet + ']{6})-?([XY])$');
+
+  function newSeed() {
+    const bytes = new Uint8Array(6);
+    let seed;
+    do {
+      crypto.getRandomValues(bytes);
+      seed = Array.from(bytes, byte => alphabet[byte % alphabet.length]).join('');
+    } while (seed === legacySeed);
+    return seed;
+  }
+
+  function parsePair(value) {
+    const match = String(value).trim().toUpperCase().match(pairPattern);
+    return match ? { seed: match[1], set: match[2] } : null;
+  }
+
+  function generator(seed) {
+    let state = 2166136261;
+    for (const char of `v${version}:${seed}`) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
+    if (!state) state = 1;
+    return () => {
+      state ^= state << 13;
+      state ^= state >>> 17;
+      state ^= state << 5;
+      return state >>> 0;
+    };
+  }
+
+  function materialsFor(seed) {
+    if (seed === legacySeed) return original;
+    const next = generator(seed);
+    const pick = text => text[next() % text.length];
+    const used = new Set();
+    const materials = { practice: original.practice };
+    for (const set of ['X', 'Y']) {
+      materials[set] = original[set].map(([item]) => {
+        let code;
+        do {
+          code = pick(letters) + pick(digits) + pick(letters) + pick(digits);
+        } while (used.has(code) || code[0] === code[2] || code[1] === code[3]);
+        used.add(code);
+        return [item, code];
+      });
+    }
+    return materials;
+  }
+
+  return { newSeed, parsePair, materialsFor, legacySeed, version, practice: original.practice };
+})();
+
+(() => {
+  'use strict';
+
+  const targetRows = [8, 2, 10, 5, 12, 4];
+  const assignments = [
+    [['A', 'X'], ['B', 'Y']],
+    [['B', 'X'], ['A', 'Y']],
+    [['A', 'Y'], ['B', 'X']],
+    [['B', 'Y'], ['A', 'X']],
+  ];
+  const conditionNames = { A: '태블릿 원본', B: '노트북 원본' };
+  const postureChoices = ['정면에 가까움', '아래로 숙임', '옆으로 돌림', '숙인 채 옆으로 돌림', '기억이 불확실함'];
+  const scales = [
+    ['mental', '정신적 요구', '매우 낮음', '매우 높음'],
+    ['physical', '신체적 요구', '매우 낮음', '매우 높음'],
+    ['temporal', '시간적 요구', '매우 낮음', '매우 높음'],
+    ['performance', '수행도', '매우 잘함', '매우 못함'],
+    ['effort', '노력', '매우 낮음', '매우 높음'],
+    ['frustration', '좌절감', '매우 낮음', '매우 높음'],
+  ];
+  const duration = 90_000;
+  const testMode = new URLSearchParams(location.search).get('test') === '1';
+  const app = document.getElementById('app');
+  let ticker;
+  let session = null;
+  let materials = null;
+  if (testMode) {
+    document.querySelector('.course').textContent = '테스트 모드';
+    document.querySelector('.brand').href = './index.html?test=1';
+  }
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    })[char]);
+  }
+
+  function normalize(value) {
+    return String(value).trim().toUpperCase();
+  }
+
+  function groupFor(participant) {
+    return (participant - 1) % assignments.length;
+  }
+
+  function createSession(participant) {
+    const group = groupFor(participant);
+    return {
+      participant, group, index: 0, stage: 'practice', downloaded: false, seed: sourceData.newSeed(),
+      records: assignments[group].map(([condition, set]) => ({
+        condition, set, answers: Array(6).fill(''),
+      })),
+    };
+  }
+
+  function current() {
+    return session.records[session.index];
+  }
+
+  function targets(record) {
+    return targetRows.map(row => materials[record.set][row - 1]);
+  }
+
+  function score(record) {
+    const counts = { correct: 0, wrong: 0, blank: 0 };
+    targets(record).forEach(([, code], index) => {
+      const answer = normalize(record.answers[index]);
+      if (answer === '') counts.blank += 1;
+      else if (answer === code) counts.correct += 1;
+      else counts.wrong += 1;
+    });
+    return counts;
+  }
+
+  function tlxMean(record) {
+    if (scales.some(([key]) => !Number.isFinite(record[key]))) return null;
+    return scales.reduce((total, [key]) => total + record[key], 0) / scales.length;
+  }
+
+  function testButton(label) {
+    return testMode ? '<button class="secondary" id="test-skip" type="button">' + label + '</button>' : '';
+  }
+
+  function onSkip(action) {
+    document.getElementById('test-skip')?.addEventListener('click', action);
+  }
+
+  function head(title, subtitle) {
+    return '<div class="stephead"><h1 tabindex="-1">' + title + '</h1><span class="phase">' + subtitle + '</span></div>';
+  }
+
+  function sourcePanel(name, rows) {
+    if (!rows) return '<section class="source is-black" aria-label="원본 영역"></section>';
+    const body = rows.map(([item, code]) =>
+      '<tr><td>' + escapeHtml(item) + '</td><td>' + escapeHtml(code) + '</td></tr>').join('');
+    return '<section class="source" aria-label="원본"><h2>' + name +
+      '</h2><table><thead><tr><th scope="col">품목명</th><th scope="col">코드</th></tr></thead><tbody>' + body + '</tbody></table></section>';
+  }
+
+  function codeFields(rows, answers) {
+    return '<div class="form-rows">' + rows.map(([item], index) =>
+      '<label class="field-row"><span>' + escapeHtml(item) + '</span><input name="item' + index +
+      '" value="' + escapeHtml(answers[index] || '') +
+      '" type="text" maxlength="24" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>').join('') + '</div>';
+  }
+
+  function neckSelect(name, heading) {
+    const options = Array.from({ length: 11 }, (_, n) => '<option value="' + n + '">' +
+      (n === 0 ? '0 — 전혀 불편하지 않음' : n === 10 ? '10 — 매우 불편함' : n) + '</option>').join('');
+    return '<label class="score">' + heading + '<select name="' + name +
+      '" required><option value="" selected disabled>점수 선택</option>' + options + '</select></label>';
+  }
+
+  function scoreControls() {
+    return scales.map(([id, label, min, max]) => {
+      const options = Array.from({ length: 21 }, (_, n) => '<option value="' + (n * 5) +
+        '">' + (n === 0 ? '0 — ' + min : n === 20 ? '100 — ' + max : n * 5) + '</option>').join('');
+      return '<label class="score">' + label + '<select required name="' + id +
+        '"><option value="" selected disabled>점수 선택</option>' + options + '</select></label>';
+    }).join('');
+  }
+
+  function showIntro() {
+    app.innerHTML = '<div class="intro"><section class="card start"><h1 tabindex="-1">원본을 보고<br>코드를 입력해 주세요</h1>' +
+      '<p class="lead">태블릿 원본과 노트북 원본으로 한 번씩 진행합니다. 준비와 설문까지 약 8분 30초가 걸립니다.</p>' +
+      '<form id="entry" autocomplete="off"><label class="number">배정받은 참가자 번호<input name="participant" type="number" min="1" max="16" inputmode="numeric" placeholder="예: 3"' + (testMode ? ' value="1"' : '') + ' required><small>이름 대신 1~16 사이의 번호를 입력해 주세요.</small></label>' +
+      '<div class="actions"><button class="primary" type="submit">연습 시작</button></div></form></section>' +
+      '<section class="card steps"><h2>시작 전 확인</h2><ol><li>노트북을 몸 앞에 두고, 태블릿은 책상 왼쪽에 평평하게 놓아 주세요.</li>' +
+      '<li>원본에서 품목을 찾고 코드를 입력합니다. 제출하기 전에 원본과 대조해 주세요.</li><li>두 조건을 마치면 결과 CSV를 저장해 주세요.</li></ol>' +
+      '<div class="actions"><a href="./tablet.html" target="_blank" rel="noopener" class="secondary">태블릿 원본 페이지</a></div></section></div>';
+    document.getElementById('entry').addEventListener('submit', event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      if (!form.reportValidity()) return;
+      session = createSession(Number(new FormData(form).get('participant')));
+      materials = sourceData.materialsFor(session.seed);
+      render();
+    });
+  }
+
+  function setupSubmit(form, submit) {
+    const inputs = [...form.querySelectorAll('input')];
+    const refresh = () => { submit.disabled = !inputs.every(input => normalize(input.value) !== ''); };
+    form.addEventListener('input', refresh);
+    refresh();
+  }
+
+  function showPractice() {
+    app.innerHTML = head('연습', '코드 1개') + '<div class="board">' + sourcePanel('연습 원본', sourceData.practice) +
+      '<form class="work" id="practice"><h2>코드 입력</h2><p class="setup-note">왼쪽 원본을 보고 코드 한 개를 입력해 보세요.</p>' +
+      codeFields(sourceData.practice, []) + '<div class="actions"><button class="primary" id="practice-submit" type="submit">연습 마치기</button>' + testButton('연습 건너뛰기') + '</div></form></div>';
+    const form = document.getElementById('practice');
+    setupSubmit(form, document.getElementById('practice-submit'));
+    const finish = () => {
+      session.stage = 'prepare';
+      render();
+    };
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      if (normalize(form.elements.item0.value)) finish();
+    });
+    onSkip(finish);
+  }
+
+  function showPrepare() {
+    const record = current();
+    const tablet = record.condition === 'A';
+    const code = session.seed + '-' + record.set;
+    const link = new URL('./tablet.html', location.href);
+    link.searchParams.set('code', code);
+    const instructions = tablet
+      ? '<p class="setup-note">태블릿 원본 페이지에서 아래 코드를 입력하거나, 복사한 링크를 태블릿에서 열어 주세요. 품목 12개가 한 화면에 보이면 시작해 주세요.</p>' +
+        '<p><span class="access-code" aria-label="원본 코드 ' + code + '">' + code + '</span></p>' +
+        '<div class="actions"><a class="secondary" target="_blank" rel="noopener" href="' + escapeHtml(link.href) +
+        '">태블릿 원본 ' + record.set + ' 열기</a><button type="button" class="secondary" id="copy">태블릿 링크 복사</button></div>' +
+        '<p class="status" id="copy-status" aria-live="polite"></p>'
+      : '<p class="setup-note">노트북 왼쪽 원본에 품목 12개가 보이는지 확인하고, 태블릿 화면을 꺼 주세요.</p>';
+    app.innerHTML = head(conditionNames[record.condition], (session.index + 1) + ' / 2번째 조건 준비') +
+      '<div class="board">' + sourcePanel('원본 ' + record.set, tablet ? null : materials[record.set]) +
+      '<form class="work" id="prepare"><h2>시작 전 준비</h2>' + instructions +
+      neckSelect('neckBefore', '지금 목이 얼마나 불편한가요?') +
+      '<p class="setup-note">여섯 개 코드를 가능한 한 정확하고 빠르게 입력하고, 제출 전 원본과 대조해 주세요.</p>' +
+      '<div class="actions"><button class="primary" type="submit">입력 시작</button>' + testButton('준비 건너뛰기') + '</div></form></div>';
+    if (tablet) document.getElementById('copy').addEventListener('click', async () => {
+      const status = document.getElementById('copy-status');
+      try {
+        if (location.protocol === 'file:') throw new Error('local file');
+        await navigator.clipboard.writeText(link.href);
+        status.textContent = '원본 링크를 복사했어요. 태블릿에서 열어 주세요.';
+      } catch {
+        status.textContent = '태블릿에서 tablet.html을 열고 위 원본 코드를 입력해 주세요.';
+      }
+    });
+    const start = neckBefore => {
+      record.neckBefore = neckBefore;
+      session.stage = 'typing';
+      render();
+    };
+    document.getElementById('prepare').addEventListener('submit', event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      if (!form.reportValidity()) return;
+      start(Number(new FormData(form).get('neckBefore')));
+    });
+    onSkip(() => start(null));
+  }
+
+  function showTyping() {
+    const record = current();
+    const tablet = record.condition === 'A';
+    app.innerHTML = head(conditionNames[record.condition], (session.index + 1) + ' / 2번째 조건') +
+      '<div class="board">' + sourcePanel('원본 ' + record.set, tablet ? null : materials[record.set]) +
+      '<form class="work" id="typing"><div class="stephead"><h2>코드 입력</h2><output class="timer" id="timer" role="timer" aria-label="남은 시간">1:30</output></div>' +
+      '<p class="setup-note">여섯 개를 입력하고 원본과 대조한 뒤 제출해 주세요.</p>' +
+      codeFields(targets(record), record.answers) + '<div class="actions"><button class="primary" id="typing-submit" type="submit">입력 제출</button>' + testButton('입력 건너뛰기') + '</div></form></div>';
+    record.startedAt = Date.now();
+    const form = document.getElementById('typing');
+    const button = document.getElementById('typing-submit');
+    const timer = document.getElementById('timer');
+    setupSubmit(form, button);
+    form.addEventListener('input', event => {
+      if (Date.now() - record.startedAt >= duration) {
+        finishTyping(true);
+        return;
+      }
+      const input = event.target;
+      if (input instanceof HTMLInputElement && /^item[0-5]$/.test(input.name)) {
+        record.answers[Number(input.name.at(-1))] = input.value;
+      }
+    });
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      if (Date.now() - record.startedAt >= duration) finishTyping(true);
+      else if (record.answers.every(answer => normalize(answer) !== '')) finishTyping(false);
+    });
+    onSkip(() => finishTyping(false, true));
+    const tick = () => {
+      const left = duration - (Date.now() - record.startedAt);
+      if (left <= 0) {
+        finishTyping(true);
+        return;
+      }
+      const seconds = Math.ceil(left / 1000);
+      timer.textContent = Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+      timer.classList.toggle('low', seconds <= 15);
+    };
+    ticker = setInterval(tick, 100);
+    tick();
+  }
+
+  function finishTyping(timedOut, skipped = false) {
+    if (session.stage !== 'typing') return;
+    const record = current();
+    const elapsed = Date.now() - record.startedAt;
+    record.timedOut = timedOut || elapsed >= duration;
+    record.skippedInput = skipped && !record.timedOut;
+    record.elapsed = record.timedOut ? 90 : Math.max(0, Math.round(elapsed / 100) / 10);
+    session.stage = 'survey';
+    render();
+  }
+
+  function showSurvey() {
+    const record = current();
+    const views = postureChoices.map((choice, index) => '<label class="choice"><input type="radio" name="posture" value="' +
+      index + '" required> ' + choice + '</label>').join('');
+    app.innerHTML = '<section class="card question">' + head('조건 종료 설문', conditionNames[record.condition]) +
+      '<p class="muted">방금 마친 조건을 기준으로 답해 주세요.</p><form id="survey">' +
+      '<fieldset><legend>목 불편감</legend>' + neckSelect('neckAfter', '지금 목이 얼마나 불편한가요?') + '</fieldset>' +
+      '<fieldset><legend>원본을 읽을 때 주로 취한 고개 자세는 무엇이었나요?</legend><div class="choices">' +
+      views + '</div></fieldset><fieldset><legend>작업부하 6문항</legend><div class="scores">' + scoreControls() +
+      '</div></fieldset><div class="actions"><button class="primary" type="submit">' +
+      (session.index === 0 ? '다음 조건 준비' : '실험 마치기') + '</button>' + testButton('설문 건너뛰기') + '</div></form></section>';
+    const advance = () => {
+      if (session.index === 0) {
+        session.index = 1;
+        session.stage = 'prepare';
+      } else session.stage = 'done';
+      render();
+    };
+    document.getElementById('survey').addEventListener('submit', event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      if (!form.reportValidity()) return;
+      const answers = new FormData(form);
+      record.neckAfter = Number(answers.get('neckAfter'));
+      record.posture = Number(answers.get('posture'));
+      for (const [id] of scales) record[id] = Number(answers.get(id));
+      advance();
+    });
+    onSkip(() => {
+      record.skippedSurvey = true;
+      advance();
+    });
+  }
+
+  function csvCell(value) {
+    let text = String(value ?? '');
+    if (typeof value === 'string' && (/^\s*[=+\-@]/.test(text) || /^[\t\r\n]/.test(text))) text = "'" + text;
+    return '"' + text.replaceAll('"', '""') + '"';
+  }
+
+  function downloadResults() {
+    const header = [
+      'participant', 'assignment', 'trial', 'condition', 'source_set', 'elapsed_seconds', 'timed_out',
+      'correct', 'wrong', 'blank', 'posture', 'neck_before', 'neck_after', 'neck_change',
+      ...scales.map(([id]) => id), 'rtlx',
+      'seed', 'generator_version', 'test_mode', 'skipped_input', 'skipped_survey',
+    ];
+    for (let i = 1; i <= 6; i++) header.push('item_' + i, 'response_' + i, 'answer_' + i);
+    const rows = session.records.map((record, index) => {
+      const counts = score(record);
+      const fields = [
+        session.participant, session.group + 1, index + 1, record.condition, record.set,
+        record.elapsed.toFixed(1), record.timedOut ? 1 : 0, counts.correct, counts.wrong, counts.blank,
+        postureChoices[record.posture], record.neckBefore, record.neckAfter,
+        Number.isFinite(record.neckBefore) && Number.isFinite(record.neckAfter) ? record.neckAfter - record.neckBefore : null,
+        ...scales.map(([id]) => record[id]), tlxMean(record)?.toFixed(2),
+        session.seed, sourceData.version,
+        testMode ? 1 : 0, record.skippedInput ? 1 : 0, record.skippedSurvey ? 1 : 0,
+      ];
+      targets(record).forEach(([name, expected], i) => fields.push(name, record.answers[i], expected));
+      return fields;
+    });
+    const csv = '\uFEFF' + [header, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = (testMode ? '테스트_' : '') + '주제6_참가자' + String(session.participant).padStart(2, '0') + '.csv';
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    session.downloaded = true;
+    document.getElementById('reset').disabled = false;
+    document.getElementById('saved').textContent = 'CSV를 저장했어요. 조에서 안내한 방법으로 파일을 보내 주세요.';
+  }
+
+  function showDone() {
+    const rows = session.records.map(record => {
+      const counts = score(record);
+      return '<tr><th scope="row">' + conditionNames[record.condition] + '</th><td>' +
+        (record.timedOut ? '90초 (시간초과)' : record.skippedInput ? '건너뜀' : record.elapsed.toFixed(1) + '초') +
+        '</td><td>' + counts.correct + ' / 6</td><td>' + counts.wrong + '</td><td>' + counts.blank + '</td></tr>';
+    }).join('');
+    app.innerHTML = '<section class="card done">' + head('실험을 마쳤어요', '참가자 ' + session.participant) +
+      '<p class="lead">아래 버튼으로 두 조건의 결과를 CSV 한 파일에 저장해 주세요.</p>' +
+      '<table class="result"><thead><tr><th>조건</th><th>시간</th><th>정답</th><th>오답</th><th>빈칸</th></tr></thead><tbody>' + rows +
+      '</tbody></table><div class="actions"><button class="primary" id="download" type="button">결과 CSV 저장</button>' +
+      '<button class="secondary" id="reset" type="button"' + (session.downloaded ? '' : ' disabled') +
+      '>새 참가자 시작</button></div><p class="status" id="saved" aria-live="polite"></p></section>';
+    document.getElementById('download').addEventListener('click', downloadResults);
+    document.getElementById('reset').addEventListener('click', () => {
+      if (session.downloaded) resetRun();
+    });
+  }
+
+  function resetRun() {
+    session = null;
+    materials = null;
+    render();
+  }
+
+  function render() {
+    clearInterval(ticker);
+    if (!session) showIntro();
+    else {
+      const screen = {
+        practice: showPractice, prepare: showPrepare, typing: showTyping,
+        survey: showSurvey, done: showDone,
+      }[session.stage];
+      screen();
+    }
+    window.scrollTo(0, 0);
+    app.querySelector('h1')?.focus({ preventScroll: true });
+  }
+
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) resetRun();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
