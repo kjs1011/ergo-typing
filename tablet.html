@@ -119,6 +119,22 @@ summary{cursor:pointer;font-weight:700}
 .optional-measures p,.measure-hint{font-size:.9rem;color:#455d70;margin-top:9px}
 .measure-summary{font-size:.9rem;color:#185485;margin-top:10px}
 .input-results{margin-top:20px}
+.device-link{padding:10px 12px;margin:8px 0 12px;border-radius:8px;background:#eaf4fc;color:#234d6c}
+.angle-help{margin:15px 0;padding:12px 14px;background:#f4f8fc;border:1px solid #c6d8e5;border-radius:9px}
+.angle-steps{padding-left:22px;margin:12px 0}
+.angle-steps li+li{margin-top:8px}
+.angle-example{display:block;width:100%;max-width:620px;height:auto;margin:12px 0}
+.angle-help video,.angle-help canvas{display:block;max-width:100%;width:100%;margin-top:12px;background:#172636;border-radius:7px}
+.angle-help canvas{cursor:crosshair;touch-action:manipulation}
+.angle-help>button{margin-top:9px}
+.angle-tools{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:13px}
+.angle-tools output{font-size:1.2rem;font-weight:800;color:#185485;min-width:100px}
+.angle-tools select{font:inherit;padding:8px;border:1px solid #9fb3c2;border-radius:7px;background:white;color:#18293a}
+.worst-scene{min-width:0;border:1px solid #dce6ed;border-radius:8px;padding:10px;background:#fafcfe}
+.worst-scene .measure-field{font-size:.95rem;margin-top:0}
+.scene-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.scene-actions button{min-height:34px;padding:5px 9px;font-size:.9rem}
+.scene-actions .checkline{font-size:.85rem;margin:5px 0}
 @media(max-width:620px){.sample-grid,.measure-grid{grid-template-columns:1fr;gap:0}.simple-condition{padding:12px}.simple-observation .actions{align-items:stretch}.simple-observation .actions button{width:100%}}
 @media(max-height:760px){.tablet-shell{padding:10px 0}.tablet-source table{font-size:.9rem}.tablet-source th,.tablet-source td{padding:2px 12px}.tablet-source .stephead h1{font-size:1.3rem}.tablet-source button{min-height:36px;margin-top:8px}}
 @media(max-width:690px){.shell{width:calc(100% - 22px)}.intro{grid-template-columns:1fr;padding-top:0;gap:12px}.start,.steps,.card{padding:17px}.source,.work{padding:10px 8px}.source th,.source td{padding:5px 4px;overflow-wrap:anywhere}.field-row{grid-template-columns:1fr;gap:1px}.field-row input{height:30px}.scores{grid-template-columns:1fr}.phase{font-size:.72rem}.course{font-size:.7rem}.stephead{gap:5px}.result th,.result td{padding:5px;font-size:.8rem}}
@@ -129,10 +145,10 @@ summary{cursor:pointer;font-weight:700}
 <main class="tablet-shell">
   <section class="card" id="tablet-entry">
     <h1>태블릿 원본</h1>
-    <p class="lead">노트북 준비 화면에 표시된 참가 번호와 시드를 입력해 주세요.</p>
+    <p class="lead">노트북에 표시된 번호를 입력하세요.</p>
     <form id="tablet-form" class="actions">
       <label class="number">참가 번호<input name="participant" placeholder="예: A01" maxlength="3" autocapitalize="characters" pattern="[Aa](0[1-9]|1[0-9]|20)" autocomplete="off" required></label>
-      <label class="number">시드<input name="seed" placeholder="6자리 숫자" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" autocomplete="off" required></label>
+      <label class="number">연결번호<input name="seed" placeholder="숫자 6자리" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" autocomplete="off" required></label>
       <button class="primary" type="submit">원본 열기</button>
     </form>
     <p class="error" id="tablet-error" role="alert"></p>
@@ -142,7 +158,7 @@ summary{cursor:pointer;font-weight:700}
     <p class="tablet-context">노트북에 표시된 원본과 같은 버튼을 눌러 주세요.</p>
     <nav class="source-switch" aria-label="원본 선택"><button class="secondary" type="button" data-source="X" aria-pressed="false">원본 X</button><button class="secondary" type="button" data-source="Y" aria-pressed="false">원본 Y</button><button class="secondary" type="button" data-source="Z" aria-pressed="false">원본 Z</button></nav>
     <table><thead><tr><th scope="col">품목명</th><th scope="col">코드</th></tr></thead><tbody id="tablet-rows"></tbody></table>
-    <button class="secondary" type="button" id="tablet-reset">참가 번호와 시드 바꾸기</button>
+    <button class="secondary" type="button" id="tablet-reset">다시 연결</button>
   </section>
 </main>
 <script>const sourceData = (() => {
@@ -246,7 +262,7 @@ summary{cursor:pointer;font-weight:700}
   function selectSource(set) {
     const repetition = sourceData.setOrderFor(participant, seed).indexOf(set);
     document.getElementById('tablet-title').textContent = '원본 ' + set;
-    document.getElementById('tablet-code').textContent = participant + ' / 시드 ' + seed;
+    document.getElementById('tablet-code').textContent = '';
     buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.source === set)));
     rows.replaceChildren(...materials.A[repetition].map(values => {
       const row = document.createElement('tr');
@@ -265,7 +281,7 @@ summary{cursor:pointer;font-weight:700}
   function openParticipant(value, seedValue) {
     participant = sourceData.participantCode(value);
     seed = sourceData.seedCode(seedValue);
-    if (!participant || !seed) { error.textContent = '노트북과 같은 참가 번호(A01~A20)와 6자리 숫자 시드를 입력해 주세요.'; return; }
+    if (!participant || !seed) { error.textContent = '노트북에 표시된 번호를 확인해 주세요.'; return; }
     materials = sourceData.materialsFor(participant, seed);
     selectSource(sourceData.setFor(participant, 0, seed));
   }
