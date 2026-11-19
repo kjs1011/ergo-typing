@@ -106,9 +106,10 @@ main{padding:26px 0 48px}
 <main class="tablet-shell">
   <section class="card" id="tablet-entry">
     <h1>태블릿 원본</h1>
-    <p class="lead">노트북과 같은 참가 번호를 입력해 주세요.</p>
+    <p class="lead">노트북 준비 화면에 표시된 참가 번호와 시드를 입력해 주세요.</p>
     <form id="tablet-form" class="actions">
-      <label class="number">참가 번호<input name="participant" placeholder="예: 01" maxlength="2" inputmode="numeric" pattern="0?[1-9]|1[0-9]|20" autocomplete="off" required></label>
+      <label class="number">참가 번호<input name="participant" placeholder="예: A01" maxlength="3" autocapitalize="characters" pattern="[Aa](0[1-9]|1[0-9]|20)" autocomplete="off" required></label>
+      <label class="number">시드<input name="seed" placeholder="6자리 숫자" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" autocomplete="off" required></label>
       <button class="primary" type="submit">원본 열기</button>
     </form>
     <p class="error" id="tablet-error" role="alert"></p>
@@ -118,26 +119,36 @@ main{padding:26px 0 48px}
     <p class="tablet-context">노트북에 표시된 원본과 같은 버튼을 눌러 주세요.</p>
     <nav class="source-switch" aria-label="원본 선택"><button class="secondary" type="button" data-source="X" aria-pressed="false">원본 X</button><button class="secondary" type="button" data-source="Y" aria-pressed="false">원본 Y</button><button class="secondary" type="button" data-source="Z" aria-pressed="false">원본 Z</button></nav>
     <table><thead><tr><th scope="col">품목명</th><th scope="col">코드</th></tr></thead><tbody id="tablet-rows"></tbody></table>
-    <button class="secondary" type="button" id="tablet-reset">참가 번호 바꾸기</button>
+    <button class="secondary" type="button" id="tablet-reset">참가 번호와 시드 바꾸기</button>
   </section>
 </main>
 <script>const sourceData = (() => {
   const original = {"X":["공책","색연필","가위","복사용지","수정테이프","종이컵","포스트잇","네임펜","지퍼백","클립","스티커","물티슈","볼펜","테이프"],"Y":["수첩","형광펜","집게","색종이팩","네임스티커","나무젓가락","메모카드","보드펜","고무줄","압정","파일철","휴지통","연필","봉투"],"practice":[["연습용 봉투","H5N7Q"]],"Z":["물병","종이봉투","칼","책갈피","명찰","바인더","서류함","필통","자석","펜꽂이","수정액","색테이프","키링","연필깎이"]};
-  const protocol = {"version":5,"generatorVersion":3,"targetOrderVersion":3,"allocationVersion":2,"rowCount":14,"targetCount":8,"codeLength":5,"repetitions":3,"durationSeconds":90,"materialSeed":"T6-20261119-XYZ-5","sets":["X","Y","Z"],"assignments":[["A","B"],["B","A"]],"participantGroups":[0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,1,1]};
+  const protocol = {"version":6,"generatorVersion":4,"targetOrderVersion":4,"allocationVersion":3,"rowCount":14,"targetCount":8,"codeLength":5,"repetitions":3,"durationSeconds":90,"materialSeed":"T6-20261119-XYZ-6","sets":["X","Y","Z"],"assignments":[["A","B"],["B","A"]],"participantGroups":[0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,1,1]};
   const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const digits = '23456789';
   function participantCode(value) {
-    const code = String(value).trim();
-    return /^(?:0?[1-9]|1[0-9]|20)$/.test(code) ? code.padStart(2, '0') : null;
+    const code = String(value).trim().toUpperCase();
+    return /^A(0[1-9]|1[0-9]|20)$/.test(code) ? code : null;
   }
-  function seedFor(participant) {
+  function seedCode(value) {
+    const seed = String(value).trim();
+    return /^[0-9]{6}$/.test(seed) ? seed : null;
+  }
+  function newSeed() {
+    const value = new Uint32Array(1);
+    do { crypto.getRandomValues(value); } while (value[0] >= 4294000000);
+    return String(value[0] % 1000000).padStart(6, '0');
+  }
+  function seedFor(participant, seed) {
     const code = participantCode(participant);
     if (!code) throw new Error('Invalid participant');
-    return protocol.materialSeed + '-' + code;
+    if (!seedCode(seed)) throw new Error('Invalid seed');
+    return protocol.materialSeed + '-' + code + '-' + seed;
   }
   function generator(seed, scope) {
     let state = 2166136261;
-    for (const char of 'v3:' + scope + ':' + seed) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
+    for (const char of 'v4:' + scope + ':' + seed) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
     if (!state) state = 1;
     return () => { state ^= state << 13; state ^= state >>> 17; state ^= state << 5; return state >>> 0; };
   }
@@ -155,20 +166,20 @@ main{padding:26px 0 48px}
     }
     return result;
   }
-  function setOrderFor(participant) {
-    return shuffled(protocol.sets, generator(seedFor(participant), 'sets'));
+  function setOrderFor(participant, seed) {
+    return shuffled(protocol.sets, generator(seedFor(participant, seed), 'sets'));
   }
-  function setFor(participant, repetition) {
-    return setOrderFor(participant)[repetition];
+  function setFor(participant, repetition, seed) {
+    return setOrderFor(participant, seed)[repetition];
   }
-  function materialsFor(participant) {
-    const seed = seedFor(participant);
-    const next = generator(seed, 'codes');
+  function materialsFor(participant, seed) {
+    const key = seedFor(participant, seed);
+    const next = generator(key, 'codes');
     const used = new Set();
     const materials = { practice: original.practice };
     for (const condition of ['A', 'B']) {
-      materials[condition] = setOrderFor(participant).map((set, repetition) => {
-        const names = shuffled(original[set], generator(seed, 'source-' + condition + '-' + repetition));
+      materials[condition] = setOrderFor(participant, seed).map((set, repetition) => {
+        const names = shuffled(original[set], generator(key, 'source-' + condition + '-' + repetition));
         return names.map(item => {
         let code;
         do {
@@ -182,17 +193,17 @@ main{padding:26px 0 48px}
     }
     return materials;
   }
-  function targetRowsFor(participant, repetition) {
-    const seed = seedFor(participant);
+  function targetRowsFor(participant, repetition, seed) {
+    const key = seedFor(participant, seed);
     const rows = Array.from({ length: protocol.rowCount }, (_, index) => index + 1);
-    return shuffled(rows, generator(seed, 'target-order-' + repetition)).slice(0, protocol.targetCount);
+    return shuffled(rows, generator(key, 'target-order-' + repetition)).slice(0, protocol.targetCount);
   }
   function groupFor(participant) {
     const code = participantCode(participant);
     if (!code) throw new Error('Invalid participant');
-    return protocol.participantGroups[Number(code) - 1];
+    return protocol.participantGroups[Number(code.slice(1)) - 1];
   }
-  return { protocol, participantCode, seedFor, groupFor, setFor, setOrderFor, materialsFor, targetRowsFor,
+  return { protocol, participantCode, seedCode, newSeed, seedFor, groupFor, setFor, setOrderFor, materialsFor, targetRowsFor,
     version: protocol.generatorVersion, targetOrderVersion: protocol.targetOrderVersion, practice: original.practice };
 })();
 
@@ -206,12 +217,13 @@ main{padding:26px 0 48px}
   const rows = document.getElementById('tablet-rows');
   const buttons = [...document.querySelectorAll('[data-source]')];
   let participant = null;
+  let seed = null;
   let materials = null;
 
   function selectSource(set) {
-    const repetition = sourceData.setOrderFor(participant).indexOf(set);
+    const repetition = sourceData.setOrderFor(participant, seed).indexOf(set);
     document.getElementById('tablet-title').textContent = '원본 ' + set;
-    document.getElementById('tablet-code').textContent = '참가 번호 ' + participant;
+    document.getElementById('tablet-code').textContent = participant + ' / 시드 ' + seed;
     buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.source === set)));
     rows.replaceChildren(...materials.A[repetition].map(values => {
       const row = document.createElement('tr');
@@ -227,11 +239,12 @@ main{padding:26px 0 48px}
     outline.hidden = false;
   }
 
-  function openParticipant(value) {
+  function openParticipant(value, seedValue) {
     participant = sourceData.participantCode(value);
-    if (!participant) { error.textContent = '01~20 중 노트북과 같은 참가 번호를 입력해 주세요.'; return; }
-    materials = sourceData.materialsFor(participant);
-    selectSource(sourceData.setFor(participant, 0));
+    seed = sourceData.seedCode(seedValue);
+    if (!participant || !seed) { error.textContent = '노트북과 같은 참가 번호(A01~A20)와 6자리 숫자 시드를 입력해 주세요.'; return; }
+    materials = sourceData.materialsFor(participant, seed);
+    selectSource(sourceData.setFor(participant, 0, seed));
   }
 
   function resetEntry() {
@@ -240,12 +253,13 @@ main{padding:26px 0 48px}
     form.reset();
     error.textContent = '';
     participant = null;
+    seed = null;
     materials = null;
   }
 
   form.addEventListener('submit', event => {
     event.preventDefault();
-    if (form.reportValidity()) openParticipant(form.elements.participant.value);
+    if (form.reportValidity()) openParticipant(form.elements.participant.value, form.elements.seed.value);
   });
   buttons.forEach(button => button.addEventListener('click', () => selectSource(button.dataset.source)));
   document.getElementById('tablet-reset').addEventListener('click', () => {

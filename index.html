@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="태블릿과 노트북에서 원본을 읽고 코드를 입력하는 인간공학실험">
 <meta name="theme-color" content="#f4f7f9">
-<meta name="experiment-version" content="2026-11-19-xyz-v5">
+<meta name="experiment-version" content="2026-11-19-seeded-xyz-v6">
 <title>자료 입력 자세 실험</title>
 <style>*{box-sizing:border-box}
 :root{color-scheme:light;font-family:Inter,"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;color:#18293a;background:#f4f7f9;line-height:1.55;font-synthesis:none}
@@ -112,21 +112,31 @@ main{padding:26px 0 48px}
 <noscript>실험을 시작하려면 브라우저에서 자바스크립트를 켜 주세요.</noscript>
 <script>const sourceData = (() => {
   const original = {"X":["공책","색연필","가위","복사용지","수정테이프","종이컵","포스트잇","네임펜","지퍼백","클립","스티커","물티슈","볼펜","테이프"],"Y":["수첩","형광펜","집게","색종이팩","네임스티커","나무젓가락","메모카드","보드펜","고무줄","압정","파일철","휴지통","연필","봉투"],"practice":[["연습용 봉투","H5N7Q"]],"Z":["물병","종이봉투","칼","책갈피","명찰","바인더","서류함","필통","자석","펜꽂이","수정액","색테이프","키링","연필깎이"]};
-  const protocol = {"version":5,"generatorVersion":3,"targetOrderVersion":3,"allocationVersion":2,"rowCount":14,"targetCount":8,"codeLength":5,"repetitions":3,"durationSeconds":90,"materialSeed":"T6-20261119-XYZ-5","sets":["X","Y","Z"],"assignments":[["A","B"],["B","A"]],"participantGroups":[0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,1,1]};
+  const protocol = {"version":6,"generatorVersion":4,"targetOrderVersion":4,"allocationVersion":3,"rowCount":14,"targetCount":8,"codeLength":5,"repetitions":3,"durationSeconds":90,"materialSeed":"T6-20261119-XYZ-6","sets":["X","Y","Z"],"assignments":[["A","B"],["B","A"]],"participantGroups":[0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,1,1]};
   const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const digits = '23456789';
   function participantCode(value) {
-    const code = String(value).trim();
-    return /^(?:0?[1-9]|1[0-9]|20)$/.test(code) ? code.padStart(2, '0') : null;
+    const code = String(value).trim().toUpperCase();
+    return /^A(0[1-9]|1[0-9]|20)$/.test(code) ? code : null;
   }
-  function seedFor(participant) {
+  function seedCode(value) {
+    const seed = String(value).trim();
+    return /^[0-9]{6}$/.test(seed) ? seed : null;
+  }
+  function newSeed() {
+    const value = new Uint32Array(1);
+    do { crypto.getRandomValues(value); } while (value[0] >= 4294000000);
+    return String(value[0] % 1000000).padStart(6, '0');
+  }
+  function seedFor(participant, seed) {
     const code = participantCode(participant);
     if (!code) throw new Error('Invalid participant');
-    return protocol.materialSeed + '-' + code;
+    if (!seedCode(seed)) throw new Error('Invalid seed');
+    return protocol.materialSeed + '-' + code + '-' + seed;
   }
   function generator(seed, scope) {
     let state = 2166136261;
-    for (const char of 'v3:' + scope + ':' + seed) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
+    for (const char of 'v4:' + scope + ':' + seed) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
     if (!state) state = 1;
     return () => { state ^= state << 13; state ^= state >>> 17; state ^= state << 5; return state >>> 0; };
   }
@@ -144,20 +154,20 @@ main{padding:26px 0 48px}
     }
     return result;
   }
-  function setOrderFor(participant) {
-    return shuffled(protocol.sets, generator(seedFor(participant), 'sets'));
+  function setOrderFor(participant, seed) {
+    return shuffled(protocol.sets, generator(seedFor(participant, seed), 'sets'));
   }
-  function setFor(participant, repetition) {
-    return setOrderFor(participant)[repetition];
+  function setFor(participant, repetition, seed) {
+    return setOrderFor(participant, seed)[repetition];
   }
-  function materialsFor(participant) {
-    const seed = seedFor(participant);
-    const next = generator(seed, 'codes');
+  function materialsFor(participant, seed) {
+    const key = seedFor(participant, seed);
+    const next = generator(key, 'codes');
     const used = new Set();
     const materials = { practice: original.practice };
     for (const condition of ['A', 'B']) {
-      materials[condition] = setOrderFor(participant).map((set, repetition) => {
-        const names = shuffled(original[set], generator(seed, 'source-' + condition + '-' + repetition));
+      materials[condition] = setOrderFor(participant, seed).map((set, repetition) => {
+        const names = shuffled(original[set], generator(key, 'source-' + condition + '-' + repetition));
         return names.map(item => {
         let code;
         do {
@@ -171,17 +181,17 @@ main{padding:26px 0 48px}
     }
     return materials;
   }
-  function targetRowsFor(participant, repetition) {
-    const seed = seedFor(participant);
+  function targetRowsFor(participant, repetition, seed) {
+    const key = seedFor(participant, seed);
     const rows = Array.from({ length: protocol.rowCount }, (_, index) => index + 1);
-    return shuffled(rows, generator(seed, 'target-order-' + repetition)).slice(0, protocol.targetCount);
+    return shuffled(rows, generator(key, 'target-order-' + repetition)).slice(0, protocol.targetCount);
   }
   function groupFor(participant) {
     const code = participantCode(participant);
     if (!code) throw new Error('Invalid participant');
-    return protocol.participantGroups[Number(code) - 1];
+    return protocol.participantGroups[Number(code.slice(1)) - 1];
   }
-  return { protocol, participantCode, seedFor, groupFor, setFor, setOrderFor, materialsFor, targetRowsFor,
+  return { protocol, participantCode, seedCode, newSeed, seedFor, groupFor, setFor, setOrderFor, materialsFor, targetRowsFor,
     version: protocol.generatorVersion, targetOrderVersion: protocol.targetOrderVersion, practice: original.practice };
 })();
 
@@ -224,7 +234,7 @@ main{padding:26px 0 48px}
 
   function createSession(participant) {
     const group = sourceData.groupFor(participant);
-    const seed = sourceData.seedFor(participant);
+    const seed = sourceData.newSeed();
     return {
       participant,
       submissionId: crypto.randomUUID(),
@@ -235,8 +245,8 @@ main{padding:26px 0 48px}
       surveys: assignments[group].map(() => null),
       records: assignments[group].flatMap((condition, block) =>
         Array.from({ length: protocol.repetitions }, (_, repetition) => ({
-          block: block + 1, repetition: repetition + 1, condition, set: sourceData.setFor(participant, repetition),
-          targetRows: sourceData.targetRowsFor(participant, repetition), answers: Array(protocol.targetCount).fill(''),
+          block: block + 1, repetition: repetition + 1, condition, set: sourceData.setFor(participant, repetition, seed),
+          targetRows: sourceData.targetRowsFor(participant, repetition, seed), answers: Array(protocol.targetCount).fill(''),
         }))),
     };
   }
@@ -317,7 +327,7 @@ main{padding:26px 0 48px}
   function showIntro() {
     app.innerHTML = '<div class="intro"><section class="card start"><h1 tabindex="-1">원본을 보고<br>코드를 입력해 주세요</h1>' +
       '<p class="lead">태블릿 원본과 노트북 원본으로 세 번씩, 총 여섯 번 진행합니다. 화면 안내에 따라 혼자 진행하며, 준비와 설문까지 약 15분이 걸립니다.</p>' +
-      '<form id="entry" autocomplete="off"><label class="number">참가 번호<input name="participant" type="text" inputmode="numeric" pattern="0?[1-9]|1[0-9]|20" maxlength="2" autocomplete="off" placeholder="예: 01"' + (testMode ? ' value="01"' : '') + ' required><small>01~20 중 배정받은 번호를 입력해 주세요. 태블릿에도 같은 번호를 입력합니다.</small></label>' +
+      '<form id="entry" autocomplete="off"><label class="number">참가 번호<input name="participant" type="text" pattern="[Aa](0[1-9]|1[0-9]|20)" maxlength="3" autocapitalize="characters" autocomplete="off" placeholder="예: A01"' + (testMode ? ' value="A01"' : '') + ' required><small>A01~A20 중 배정받은 번호를 입력해 주세요. 시드는 시작할 때 자동으로 생성됩니다.</small></label>' +
       '<div class="actions"><button class="primary" type="submit">연습 시작</button></div></form></section>' +
       '<section class="card steps"><h2>시작 전 확인</h2><ol><li>노트북을 몸 앞에 두고, 태블릿은 책상 왼쪽에 평평하게 놓아 주세요.</li>' +
       '<li>원본에서 품목을 찾고 코드를 입력합니다. 제출하기 전에 원본과 대조해 주세요.</li>' +
@@ -329,7 +339,7 @@ main{padding:26px 0 48px}
       const form = event.currentTarget;
       if (!form.reportValidity()) return;
       session = createSession(sourceData.participantCode(new FormData(form).get('participant')));
-      materials = sourceData.materialsFor(session.participant);
+      materials = sourceData.materialsFor(session.participant, session.seed);
       render();
     });
   }
@@ -362,11 +372,11 @@ main{padding:26px 0 48px}
     const record = current();
     const tablet = record.condition === 'A';
     const instructions = tablet
-      ? '<p class="setup-note">태블릿에 같은 참가 번호 <strong>' + session.participant + '</strong>를 입력하고, <strong>원본 ' + record.set + '</strong> 버튼을 눌러 주세요. 품목 14개가 보이면 시작해 주세요.</p>'
+      ? '<p class="setup-note">태블릿에 위 참가 번호와 시드를 한 번 입력하고, <strong>원본 ' + record.set + '</strong> 버튼을 눌러 주세요. 이후에는 원본 버튼만 바꾸면 됩니다. 품목 14개가 보이면 시작해 주세요.</p>'
       : '<p class="setup-note">노트북 왼쪽의 <strong>원본 ' + record.set + '</strong>에 품목 14개가 보이는지 확인하고, 태블릿 화면을 꺼 주세요.</p>';
     app.innerHTML = head(conditionNames[record.condition], record.block + ' / 2블록 / ' + record.repetition + ' / 3회 준비') +
       '<div class="board">' + sourcePanel('원본 ' + record.set, tablet ? null : materials[record.condition][record.repetition - 1]) +
-      '<form class="work" id="prepare"><h2>시작 전 준비</h2>' + instructions +
+      '<form class="work" id="prepare"><h2>시작 전 준비</h2><p class="setup-note">참가 번호 <strong>' + session.participant + '</strong> / 시드 <strong>' + session.seed + '</strong></p>' + instructions +
       '<p class="setup-note">이번 시행은 원본 ' + record.set + '입니다. 품목 순서와 코드는 매번 바뀝니다. 여덟 개의 5글자 코드를 정확하고 빠르게 입력하고 제출 전 대조해 주세요.</p>' +
       '<div class="actions"><button class="primary" type="submit">입력 시작</button></div></form></div>';
     document.getElementById('prepare').addEventListener('submit', event => {
@@ -547,7 +557,7 @@ main{padding:26px 0 48px}
         (record.timedOut ? '90초 (시간초과)' : record.skippedInput ? '건너뜀' : record.elapsed.toFixed(1) + '초') +
         '</td><td>' + counts.correct + ' / 8</td><td>' + counts.wrong + '</td><td>' + counts.blank + '</td></tr>';
     }).join('');
-    app.innerHTML = '<section class="card done">' + head('실험을 마쳤어요', '참가자 ' + session.participant) +
+    app.innerHTML = '<section class="card done">' + head('실험을 마쳤어요', '참가자 ' + session.participant + ' / 시드 ' + session.seed) +
       '<p class="lead" role="status">' + (testMode ? '테스트를 마쳤어요. 테스트 응답은 전송하지 않아요.' : messages[session.sendState]) + '</p>' +
       '<table class="result"><thead><tr><th>조건</th><th>시간</th><th>정답</th><th>오답</th><th>빈칸</th></tr></thead><tbody>' + rows +
       '</tbody></table><div class="actions">' +
