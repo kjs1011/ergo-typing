@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="태블릿과 노트북에서 원본을 읽고 코드를 입력하는 인간공학실험">
 <meta name="theme-color" content="#f4f7f9">
-<meta name="experiment-version" content="2026-11-19-blocks-v2">
+<meta name="experiment-version" content="2026-11-19-work-analysis-v3">
 <title>자료 입력 자세 실험</title>
 <style>*{box-sizing:border-box}
 :root{color-scheme:light;font-family:Inter,"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;color:#18293a;background:#f4f7f9;line-height:1.55;font-synthesis:none}
@@ -75,6 +75,11 @@ main{padding:26px 0 48px}
 .scores{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 13px}
 .score{display:grid;grid-template-columns:minmax(70px,.9fr) minmax(100px,1.1fr);align-items:center;gap:8px;font-size:.9rem}
 .score select{min-height:34px}
+.observer-note{font-size:.85rem;color:#455d70;margin:5px 0}
+.observer-note summary{cursor:pointer}
+.observer-note p{margin:7px 0;max-width:48em}
+.observation-scores{display:grid;gap:10px}
+.observation-scores .score{grid-template-columns:100px minmax(0,1fr)}
 .result{width:100%;border-collapse:collapse;margin-top:16px}
 .result th,.result td{border-bottom:1px solid #dce6ed;padding:8px 10px;text-align:left}
 .done{max-width:790px;margin:3vh auto}
@@ -102,7 +107,7 @@ main{padding:26px 0 48px}
 <noscript>실험을 시작하려면 브라우저에서 자바스크립트를 켜 주세요.</noscript>
 <script>const sourceData = (() => {
   const original = {"X":["공책","색연필","가위","복사용지","수정테이프","종이컵","포스트잇","네임펜","지퍼백","클립","스티커","물티슈","볼펜","테이프","자","스테이플러"],"Y":["수첩","형광펜","집게","색종이팩","네임스티커","나무젓가락","메모카드","보드펜","고무줄","압정","파일철","휴지통","연필","봉투","풀","계산기"],"practice":[["연습용 봉투","H5N7Q3"]]};
-  const protocol = {"version":2,"generatorVersion":2,"targetOrderVersion":2,"allocationVersion":1,"rowCount":16,"targetCount":8,"repetitions":3,"durationSeconds":90,"assignments":[[["A","X"],["B","Y"]],[["B","X"],["A","Y"]],[["A","Y"],["B","X"]],[["B","Y"],["A","X"]]],"participantGroups":[2,3,0,2,2,3,1,1,0,2,0,1,2,0,0,3,3,1,3,1]};
+  const protocol = {"version":3,"generatorVersion":2,"targetOrderVersion":2,"allocationVersion":1,"rowCount":16,"targetCount":8,"repetitions":3,"durationSeconds":90,"assignments":[[["A","X"],["B","Y"]],[["B","X"],["A","Y"]],[["A","Y"],["B","X"]],[["B","Y"],["A","X"]]],"participantGroups":[2,3,0,2,2,3,1,1,0,2,0,1,2,0,0,3,3,1,3,1]};
   const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const digits = '23456789';
   const alphabet = digits + letters;
@@ -284,15 +289,26 @@ main{padding:26px 0 48px}
     }).join('');
   }
 
+  function observationControls() {
+    const neck = ['정면에 가까움', '아래로 숙임', '옆으로 돌림', '숙인 채 옆으로 돌림', '미관찰·판별 불가'];
+    const trunk = ['뚜렷한 앞으로 기울임 없음', '몸통을 앞으로 기울임', '미관찰·판별 불가'];
+    const select = (name, label, choices) => '<label class="score">' + label + '<select required name="' + name +
+      '"><option value="" disabled selected>선택</option>' + choices.map((text, index) =>
+        '<option value="' + index + '">' + text + '</option>').join('') + '</select></label>';
+    return ['원본 읽기', '코드 입력'].map((stage, index) => '<fieldset><legend>' + stage + '</legend><div class="observation-scores">' +
+      select('neck' + index, '고개 자세', neck) + select('trunk' + index, '몸통 자세', trunk) + '</div></fieldset>').join('');
+  }
+
   function showIntro() {
     app.innerHTML = '<div class="intro"><section class="card start"><h1 tabindex="-1">원본을 보고<br>코드를 입력해 주세요</h1>' +
-      '<p class="lead">태블릿 원본과 노트북 원본으로 세 번씩, 총 여섯 번 진행합니다. 준비와 설문까지 약 15분이 걸립니다.</p>' +
+      '<p class="lead">태블릿 원본과 노트북 원본으로 세 번씩, 총 여섯 번 진행합니다. 준비와 설문까지 약 15~18분이 걸립니다.</p>' +
       '<form id="entry" autocomplete="off"><label class="number">배정받은 참가자 번호<input name="participant" type="text" pattern="[Aa](0[1-9]|1[0-9]|20)" maxlength="3" autocapitalize="characters" spellcheck="false" placeholder="예: A01"' + (testMode ? ' value="A01"' : '') + ' required><small>A01부터 A20까지 배정받은 번호를 입력해 주세요.</small></label>' +
       '<div class="actions"><button class="primary" type="submit">연습 시작</button></div></form></section>' +
       '<section class="card steps"><h2>시작 전 확인</h2><ol><li>노트북을 몸 앞에 두고, 태블릿은 책상 왼쪽에 평평하게 놓아 주세요.</li>' +
       '<li>원본에서 품목을 찾고 코드를 입력합니다. 제출하기 전에 원본과 대조해 주세요.</li>' +
       '<li><strong>실험을 끝내기 전에는 응답이 저장되지 않아요.</strong> 새로고침하거나 창을 닫으면 지금까지의 입력이 사라져요.</li>' +
       '<li>각 배치에서 세 번 입력한 뒤 설문에 답해 주세요. 여섯 번을 모두 마치면 결과를 한 번에 전송해요.</li>' +
+      '<li>진행자가 옆에서 작업 자세를 관찰합니다. 평소처럼 작업해 주세요.</li>' +
       '<li>전송 완료 메시지가 뜰 때까지 기다려 주세요.</li></ol></section></div>';
     document.getElementById('entry').addEventListener('submit', event => {
       event.preventDefault();
@@ -342,6 +358,7 @@ main{padding:26px 0 48px}
       '<div class="board">' + sourcePanel('원본 ' + record.set, tablet ? null : materials[record.set]) +
       '<form class="work" id="prepare"><h2>시작 전 준비</h2>' + instructions +
       '<p class="setup-note">여덟 개의 6글자 코드를 가능한 한 정확하고 빠르게 입력하고, 제출 전 원본과 대조해 주세요.</p>' +
+      (record.repetition === 1 ? '<details class="observer-note"><summary>진행자 관찰 안내</summary><p>이번 블록의 첫 시행에서 ① 첫 번째 코드를 읽으려고 원본을 보는 순간, ② 첫 번째 코드를 키보드로 입력하는 순간의 고개·몸통 자세를 종이에 기록해 주세요. 촬영하거나 자세를 지시하지 않습니다. 블록 설문 뒤에 기록을 옮깁니다. 놓친 장면은 미관찰로 남겨 주세요.</p></details>' : '') +
       '<div class="actions"><button class="primary" type="submit">입력 시작</button></div></form></div>';
     document.getElementById('prepare').addEventListener('submit', event => {
       event.preventDefault();
@@ -359,10 +376,21 @@ main{padding:26px 0 48px}
       '<p class="setup-note">여덟 개를 입력하고 원본과 대조한 뒤 제출해 주세요.</p>' +
       codeFields(targets(record), record.answers) + '<div class="actions"><button class="primary" id="typing-submit" type="submit">입력 제출</button>' + testButton('입력 건너뛰기') + '</div></form></div>';
     record.startedAt = Date.now();
+    record.taskLog = [null, null, null, 0, 0];
+    const visited = new Set();
+    const completedValues = new Map();
+    const revised = new Set();
     const form = document.getElementById('typing');
     const button = document.getElementById('typing-submit');
     const timer = document.getElementById('timer');
     setupSubmit(form, button);
+    form.addEventListener('focusin', event => {
+      const match = /^item([0-7])$/.exec(event.target.name || '');
+      if (!match || Date.now() - record.startedAt >= duration) return;
+      const index = Number(match[1]);
+      if (visited.has(index)) record.taskLog[4] += 1;
+      visited.add(index);
+    });
     form.addEventListener('input', event => {
       if (Date.now() - record.startedAt >= duration) {
         finishTyping(true);
@@ -370,7 +398,15 @@ main{padding:26px 0 48px}
       }
       const input = event.target;
       if (input instanceof HTMLInputElement && /^item[0-7]$/.test(input.name)) {
-        record.answers[Number(input.name.slice(4))] = input.value;
+        const index = Number(input.name.slice(4));
+        record.answers[index] = input.value;
+        const value = normalize(input.value);
+        const seconds = Math.max(0, Math.round((Date.now() - record.startedAt) / 100) / 10);
+        if (value && record.taskLog[0] === null) record.taskLog[0] = seconds;
+        if (completedValues.has(index) && completedValues.get(index) !== value) revised.add(index);
+        if (value.length === 6 && !completedValues.has(index)) completedValues.set(index, value);
+        record.taskLog[3] = revised.size;
+        if (record.taskLog[1] === null && record.answers.every(answer => normalize(answer).length === 6)) record.taskLog[1] = seconds;
       }
     });
     form.addEventListener('submit', event => {
@@ -400,6 +436,8 @@ main{padding:26px 0 48px}
     record.timedOut = timedOut || elapsed >= duration;
     record.skippedInput = skipped && !record.timedOut;
     record.elapsed = record.timedOut ? 90 : Math.max(0, Math.round(elapsed / 100) / 10);
+    record.taskLog ||= [null, null, null, 0, 0];
+    record.taskLog[2] = record.taskLog[1] === null ? null : Math.max(0, Math.round((record.elapsed - record.taskLog[1]) * 10) / 10);
     if (record.repetition < protocol.repetitions) {
       session.index += 1;
       session.stage = 'prepare';
@@ -417,18 +455,8 @@ main{padding:26px 0 48px}
       '<fieldset><legend>원본을 읽을 때 주로 취한 고개 자세는 무엇이었나요?</legend><div class="choices">' +
       views + '</div></fieldset><fieldset><legend>작업부하 6문항</legend><div class="scores">' + scoreControls() +
       '</div></fieldset><div class="actions"><button class="primary" type="submit">' +
-      (record.block === 1 ? '다음 블록 준비' : testMode ? '실험 마치기' : '실험 마치고 전송') + '</button>' + testButton('설문 건너뛰기') + '</div></form></section>';
-    const advance = () => {
-      if (session.index < session.records.length - 1) {
-        session.index += 1;
-        session.stage = 'prepare';
-        render();
-        return;
-      }
-      session.stage = 'done';
-      if (testMode) render();
-      else void sendResults();
-    };
+      '설문 마치기</button>' + testButton('설문 건너뛰기') + '</div></form></section>';
+    const advance = () => { session.stage = 'observation'; render(); };
     document.getElementById('survey').addEventListener('submit', event => {
       event.preventDefault();
       const form = event.currentTarget;
@@ -442,6 +470,33 @@ main{padding:26px 0 48px}
       advance();
     });
     onSkip(advance);
+  }
+
+  function showObservation() {
+    const record = current();
+    app.innerHTML = '<section class="card question">' + head('진행자 관찰 기록', conditionNames[record.condition]) +
+      '<p class="muted">이 블록의 첫 시행에서 기록한 두 장면을 옮겨 주세요. 원본 읽기는 첫 코드를 읽으려고 원본을 보는 순간, 코드 입력은 첫 코드를 키보드로 입력하는 순간입니다. 놓친 장면은 미관찰로 남겨 주세요.</p><form id="observation">' +
+      observationControls() + '<div class="actions"><button class="primary" type="submit">' +
+      (record.block === 1 ? '다음 블록 준비' : testMode ? '실험 마치기' : '실험 마치고 전송') + '</button>' + testButton('관찰 건너뛰기') + '</div></form></section>';
+    const advance = observation => {
+      session.surveys[record.block - 1] ||= { neckAfter: null, posture: null, workload: null };
+      session.surveys[record.block - 1].observation = observation;
+      if (session.index < session.records.length - 1) {
+        session.index += 1;
+        session.stage = 'prepare';
+        render();
+      } else {
+        session.stage = 'done';
+        if (testMode) render(); else void sendResults();
+      }
+    };
+    document.getElementById('observation').addEventListener('submit', event => {
+      event.preventDefault();
+      if (!event.currentTarget.reportValidity()) return;
+      const data = new FormData(event.currentTarget);
+      advance([0, 1].map(index => [Number(data.get('neck' + index)), Number(data.get('trunk' + index))]));
+    });
+    onSkip(() => advance([[4, 2], [4, 2]]));
   }
 
   async function sendResults() {
@@ -462,7 +517,7 @@ main{padding:26px 0 48px}
         condition, set, ...run.surveys[block],
         trials: run.records.filter(record => record.block === block + 1).map(record => ({
           repetition: record.repetition, targetRows: record.targetRows,
-          elapsed: record.elapsed, timedOut: record.timedOut, responses: record.answers,
+          elapsed: record.elapsed, timedOut: record.timedOut, responses: record.answers, taskLog: record.taskLog,
         })),
       })),
     };
@@ -486,7 +541,7 @@ main{padding:26px 0 48px}
 
   function showDone() {
     const messages = {
-      sending: '여섯 번의 입력 결과와 두 블록의 설문을 전송하고 있어요. 이 창을 열어 두세요.',
+      sending: '여섯 번의 입력 결과와 두 블록의 설문·관찰 기록을 전송하고 있어요. 이 창을 열어 두세요.',
       sent: '결과를 전송했어요. 이제 창을 닫아도 돼요.',
       retry: '전송 완료를 확인하지 못했어요. 창을 닫지 말고 다시 전송해 주세요.',
       duplicate: '이미 제출된 참가자 번호예요. 실험 진행자에게 알려 주세요.',
@@ -521,7 +576,7 @@ main{padding:26px 0 48px}
     else {
       const screen = {
         practice: showPractice, prepare: showPrepare, typing: showTyping,
-        survey: showSurvey, done: showDone,
+        survey: showSurvey, observation: showObservation, done: showDone,
       }[session.stage];
       screen();
     }
