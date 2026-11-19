@@ -73,6 +73,15 @@ main{padding:26px 0 48px}
 .scores{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 13px}
 .score{display:grid;grid-template-columns:minmax(70px,.9fr) minmax(100px,1.1fr);align-items:center;gap:8px;font-size:.9rem}
 .score select{min-height:34px}
+.slider-score{display:grid;gap:8px;border:1px solid #d2dfe8;border-radius:9px;padding:12px;background:#f8fbfe}
+.slider-title{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:700;font-size:.9rem}
+.slider-title output{font-variant-numeric:tabular-nums;color:#185485;min-width:48px;text-align:right}
+.slider-score input{width:100%;height:28px;margin:0;accent-color:#185485;cursor:pointer}
+.slider-ends{display:flex;justify-content:space-between;gap:12px;font-size:.74rem;color:#455d70}
+.source-switch{display:flex;gap:8px;margin:10px 0 12px}
+.source-switch button{flex:1;min-height:42px;margin:0}
+.source-switch button[aria-pressed="true"]{background:#185485;color:white}
+.tablet-context{font-size:.85rem;color:#455d70;margin:5px 0}
 .posture-note{font-size:.85rem;margin:0 0 7px}
 .result{width:100%;border-collapse:collapse;margin-top:16px}
 .result th,.result td{border-bottom:1px solid #dce6ed;padding:8px 10px;text-align:left}
@@ -97,34 +106,38 @@ main{padding:26px 0 48px}
 <main class="tablet-shell">
   <section class="card" id="tablet-entry">
     <h1>태블릿 원본</h1>
-    <p class="lead">노트북의 준비 화면에 나온 원본 코드를 입력해 주세요.</p>
+    <p class="lead">노트북과 같은 참가 번호를 입력해 주세요.</p>
     <form id="tablet-form" class="actions">
-      <label class="number">원본 코드<input name="code" placeholder="예: 2-AB3X92-X" maxlength="10" autocapitalize="characters" autocomplete="off" spellcheck="false" required></label>
+      <label class="number">참가 번호<input name="participant" placeholder="예: 01" maxlength="2" inputmode="numeric" pattern="0?[1-9]|1[0-9]|20" autocomplete="off" required></label>
       <button class="primary" type="submit">원본 열기</button>
     </form>
     <p class="error" id="tablet-error" role="alert"></p>
   </section>
   <section class="tablet-source" id="tablet-source" hidden>
     <div class="stephead"><h1 id="tablet-title">원본</h1><span class="phase" id="tablet-code"></span></div>
+    <p class="tablet-context">노트북에 표시된 원본과 같은 버튼을 눌러 주세요.</p>
+    <nav class="source-switch" aria-label="원본 선택"><button class="secondary" type="button" data-source="X" aria-pressed="false">원본 X</button><button class="secondary" type="button" data-source="Y" aria-pressed="false">원본 Y</button><button class="secondary" type="button" data-source="Z" aria-pressed="false">원본 Z</button></nav>
     <table><thead><tr><th scope="col">품목명</th><th scope="col">코드</th></tr></thead><tbody id="tablet-rows"></tbody></table>
-    <button class="secondary" type="button" id="tablet-reset">다른 원본 열기</button>
+    <button class="secondary" type="button" id="tablet-reset">참가 번호 바꾸기</button>
   </section>
 </main>
 <script>const sourceData = (() => {
-  const original = {"X":["공책","색연필","가위","복사용지","수정테이프","종이컵","포스트잇","네임펜","지퍼백","클립","스티커","물티슈","볼펜","테이프","자","스테이플러"],"Y":["수첩","형광펜","집게","색종이팩","네임스티커","나무젓가락","메모카드","보드펜","고무줄","압정","파일철","휴지통","연필","봉투","풀","계산기"],"practice":[["연습용 봉투","H5N7Q3"]]};
-  const protocol = {"version":4,"generatorVersion":2,"targetOrderVersion":2,"allocationVersion":1,"rowCount":16,"targetCount":8,"repetitions":3,"durationSeconds":90,"assignments":[[["A","X"],["B","Y"]],[["B","X"],["A","Y"]],[["A","Y"],["B","X"]],[["B","Y"],["A","X"]]],"participantGroups":[2,3,0,2,2,3,1,1,0,2,0,1,2,0,0,3,3,1,3,1]};
+  const original = {"X":["공책","색연필","가위","복사용지","수정테이프","종이컵","포스트잇","네임펜","지퍼백","클립","스티커","물티슈","볼펜","테이프"],"Y":["수첩","형광펜","집게","색종이팩","네임스티커","나무젓가락","메모카드","보드펜","고무줄","압정","파일철","휴지통","연필","봉투"],"practice":[["연습용 봉투","H5N7Q"]],"Z":["물병","종이봉투","칼","책갈피","명찰","바인더","서류함","필통","자석","펜꽂이","수정액","색테이프","키링","연필깎이"]};
+  const protocol = {"version":5,"generatorVersion":3,"targetOrderVersion":3,"allocationVersion":2,"rowCount":14,"targetCount":8,"codeLength":5,"repetitions":3,"durationSeconds":90,"materialSeed":"T6-20261119-XYZ-5","sets":["X","Y","Z"],"assignments":[["A","B"],["B","A"]],"participantGroups":[0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,1,1]};
   const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const digits = '23456789';
-  const alphabet = digits + letters;
-  const pairPattern = new RegExp('^2-([' + alphabet + ']{6})-([XY])$');
-  function newSeed() {
-    const bytes = new Uint8Array(6);
-    crypto.getRandomValues(bytes);
-    return Array.from(bytes, byte => alphabet[byte % alphabet.length]).join('');
+  function participantCode(value) {
+    const code = String(value).trim();
+    return /^(?:0?[1-9]|1[0-9]|20)$/.test(code) ? code.padStart(2, '0') : null;
+  }
+  function seedFor(participant) {
+    const code = participantCode(participant);
+    if (!code) throw new Error('Invalid participant');
+    return protocol.materialSeed + '-' + code;
   }
   function generator(seed, scope) {
     let state = 2166136261;
-    for (const char of 'v2:' + scope + ':' + seed) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
+    for (const char of 'v3:' + scope + ':' + seed) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
     if (!state) state = 1;
     return () => { state ^= state << 13; state ^= state >>> 17; state ^= state << 5; return state >>> 0; };
   }
@@ -142,37 +155,44 @@ main{padding:26px 0 48px}
     }
     return result;
   }
-  function materialsFor(seed) {
+  function setOrderFor(participant) {
+    return shuffled(protocol.sets, generator(seedFor(participant), 'sets'));
+  }
+  function setFor(participant, repetition) {
+    return setOrderFor(participant)[repetition];
+  }
+  function materialsFor(participant) {
+    const seed = seedFor(participant);
     const next = generator(seed, 'codes');
     const used = new Set();
     const materials = { practice: original.practice };
-    for (const set of ['X', 'Y']) {
-      const names = shuffled(original[set], generator(seed, 'source-' + set));
-      materials[set] = names.map(item => {
+    for (const condition of ['A', 'B']) {
+      materials[condition] = setOrderFor(participant).map((set, repetition) => {
+        const names = shuffled(original[set], generator(seed, 'source-' + condition + '-' + repetition));
+        return names.map(item => {
         let code;
         do {
-          code = Array.from({ length: 3 }, () => letters[integer(next, letters.length)] + digits[integer(next, digits.length)]).join('');
-        } while (used.has(code) || new Set([code[0], code[2], code[4]]).size !== 3 || new Set([code[1], code[3], code[5]]).size !== 3);
+          code = letters[integer(next, letters.length)] + digits[integer(next, digits.length)] +
+            letters[integer(next, letters.length)] + digits[integer(next, digits.length)] + letters[integer(next, letters.length)];
+        } while (used.has(code) || new Set([code[0], code[2], code[4]]).size !== 3 || code[1] === code[3]);
         used.add(code);
         return [item, code];
+        });
       });
     }
     return materials;
   }
-  function targetRowsFor(seed, repetition) {
+  function targetRowsFor(participant, repetition) {
+    const seed = seedFor(participant);
     const rows = Array.from({ length: protocol.rowCount }, (_, index) => index + 1);
     return shuffled(rows, generator(seed, 'target-order-' + repetition)).slice(0, protocol.targetCount);
   }
   function groupFor(participant) {
-    if (!/^A(0[1-9]|1[0-9]|20)$/.test(participant)) throw new Error('Invalid participant');
-    return protocol.participantGroups[Number(participant.slice(1)) - 1];
+    const code = participantCode(participant);
+    if (!code) throw new Error('Invalid participant');
+    return protocol.participantGroups[Number(code) - 1];
   }
-  function pairCode(seed, set) { return '2-' + seed + '-' + set; }
-  function parsePair(value) {
-    const match = String(value).trim().toUpperCase().match(pairPattern);
-    return match ? { seed: match[1], set: match[2] } : null;
-  }
-  return { protocol, newSeed, groupFor, pairCode, parsePair, materialsFor, targetRowsFor,
+  return { protocol, participantCode, seedFor, groupFor, setFor, setOrderFor, materialsFor, targetRowsFor,
     version: protocol.generatorVersion, targetOrderVersion: protocol.targetOrderVersion, practice: original.practice };
 })();
 
@@ -184,17 +204,16 @@ main{padding:26px 0 48px}
   const outline = document.getElementById('tablet-source');
   const error = document.getElementById('tablet-error');
   const rows = document.getElementById('tablet-rows');
+  const buttons = [...document.querySelectorAll('[data-source]')];
+  let participant = null;
+  let materials = null;
 
-  function openSource(value) {
-    const pair = sourceData.parsePair(value);
-    if (!pair) {
-      error.textContent = '노트북의 원본 코드를 2-로 시작하는 부분부터 그대로 입력해 주세요.';
-      return;
-    }
-    const code = pair.seed + '-' + pair.set;
-    document.getElementById('tablet-title').textContent = '원본 ' + pair.set;
-    document.getElementById('tablet-code').textContent = code;
-    rows.replaceChildren(...sourceData.materialsFor(pair.seed)[pair.set].map(values => {
+  function selectSource(set) {
+    const repetition = sourceData.setOrderFor(participant).indexOf(set);
+    document.getElementById('tablet-title').textContent = '원본 ' + set;
+    document.getElementById('tablet-code').textContent = '참가 번호 ' + participant;
+    buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.source === set)));
+    rows.replaceChildren(...materials.A[repetition].map(values => {
       const row = document.createElement('tr');
       for (const value of values) {
         const cell = document.createElement('td');
@@ -208,35 +227,34 @@ main{padding:26px 0 48px}
     outline.hidden = false;
   }
 
+  function openParticipant(value) {
+    participant = sourceData.participantCode(value);
+    if (!participant) { error.textContent = '01~20 중 노트북과 같은 참가 번호를 입력해 주세요.'; return; }
+    materials = sourceData.materialsFor(participant);
+    selectSource(sourceData.setFor(participant, 0));
+  }
+
   function resetEntry() {
     entry.hidden = false;
     outline.hidden = true;
     form.reset();
     error.textContent = '';
+    participant = null;
+    materials = null;
   }
 
   form.addEventListener('submit', event => {
     event.preventDefault();
-    openSource(form.elements.code.value);
+    if (form.reportValidity()) openParticipant(form.elements.participant.value);
   });
+  buttons.forEach(button => button.addEventListener('click', () => selectSource(button.dataset.source)));
   document.getElementById('tablet-reset').addEventListener('click', () => {
     resetEntry();
-    const url = new URL(location.href);
-    if (url.searchParams.has('code')) {
-      url.searchParams.delete('code');
-      try {
-        history.replaceState(null, '', url.href);
-      } catch {
-        location.replace(url.href);
-      }
-    }
-    form.elements.code.focus();
+    form.elements.participant.focus();
   });
   window.addEventListener('pageshow', event => {
-    if (event.persisted && !new URLSearchParams(location.search).get('code')) resetEntry();
+    if (event.persisted) resetEntry();
   });
-  const initialCode = new URLSearchParams(location.search).get('code');
-  if (initialCode) openSource(initialCode);
 })();
 </script>
 </body>

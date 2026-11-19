@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="태블릿과 노트북에서 원본을 읽고 코드를 입력하는 인간공학실험">
 <meta name="theme-color" content="#f4f7f9">
-<meta name="experiment-version" content="2026-11-19-self-run-v4">
+<meta name="experiment-version" content="2026-11-19-xyz-v5">
 <title>자료 입력 자세 실험</title>
 <style>*{box-sizing:border-box}
 :root{color-scheme:light;font-family:Inter,"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;color:#18293a;background:#f4f7f9;line-height:1.55;font-synthesis:none}
@@ -75,6 +75,15 @@ main{padding:26px 0 48px}
 .scores{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 13px}
 .score{display:grid;grid-template-columns:minmax(70px,.9fr) minmax(100px,1.1fr);align-items:center;gap:8px;font-size:.9rem}
 .score select{min-height:34px}
+.slider-score{display:grid;gap:8px;border:1px solid #d2dfe8;border-radius:9px;padding:12px;background:#f8fbfe}
+.slider-title{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:700;font-size:.9rem}
+.slider-title output{font-variant-numeric:tabular-nums;color:#185485;min-width:48px;text-align:right}
+.slider-score input{width:100%;height:28px;margin:0;accent-color:#185485;cursor:pointer}
+.slider-ends{display:flex;justify-content:space-between;gap:12px;font-size:.74rem;color:#455d70}
+.source-switch{display:flex;gap:8px;margin:10px 0 12px}
+.source-switch button{flex:1;min-height:42px;margin:0}
+.source-switch button[aria-pressed="true"]{background:#185485;color:white}
+.tablet-context{font-size:.85rem;color:#455d70;margin:5px 0}
 .posture-note{font-size:.85rem;margin:0 0 7px}
 .result{width:100%;border-collapse:collapse;margin-top:16px}
 .result th,.result td{border-bottom:1px solid #dce6ed;padding:8px 10px;text-align:left}
@@ -102,20 +111,22 @@ main{padding:26px 0 48px}
 <main class="shell" id="app"></main>
 <noscript>실험을 시작하려면 브라우저에서 자바스크립트를 켜 주세요.</noscript>
 <script>const sourceData = (() => {
-  const original = {"X":["공책","색연필","가위","복사용지","수정테이프","종이컵","포스트잇","네임펜","지퍼백","클립","스티커","물티슈","볼펜","테이프","자","스테이플러"],"Y":["수첩","형광펜","집게","색종이팩","네임스티커","나무젓가락","메모카드","보드펜","고무줄","압정","파일철","휴지통","연필","봉투","풀","계산기"],"practice":[["연습용 봉투","H5N7Q3"]]};
-  const protocol = {"version":4,"generatorVersion":2,"targetOrderVersion":2,"allocationVersion":1,"rowCount":16,"targetCount":8,"repetitions":3,"durationSeconds":90,"assignments":[[["A","X"],["B","Y"]],[["B","X"],["A","Y"]],[["A","Y"],["B","X"]],[["B","Y"],["A","X"]]],"participantGroups":[2,3,0,2,2,3,1,1,0,2,0,1,2,0,0,3,3,1,3,1]};
+  const original = {"X":["공책","색연필","가위","복사용지","수정테이프","종이컵","포스트잇","네임펜","지퍼백","클립","스티커","물티슈","볼펜","테이프"],"Y":["수첩","형광펜","집게","색종이팩","네임스티커","나무젓가락","메모카드","보드펜","고무줄","압정","파일철","휴지통","연필","봉투"],"practice":[["연습용 봉투","H5N7Q"]],"Z":["물병","종이봉투","칼","책갈피","명찰","바인더","서류함","필통","자석","펜꽂이","수정액","색테이프","키링","연필깎이"]};
+  const protocol = {"version":5,"generatorVersion":3,"targetOrderVersion":3,"allocationVersion":2,"rowCount":14,"targetCount":8,"codeLength":5,"repetitions":3,"durationSeconds":90,"materialSeed":"T6-20261119-XYZ-5","sets":["X","Y","Z"],"assignments":[["A","B"],["B","A"]],"participantGroups":[0,1,0,0,0,1,1,1,0,0,0,1,0,0,0,1,1,1,1,1]};
   const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const digits = '23456789';
-  const alphabet = digits + letters;
-  const pairPattern = new RegExp('^2-([' + alphabet + ']{6})-([XY])$');
-  function newSeed() {
-    const bytes = new Uint8Array(6);
-    crypto.getRandomValues(bytes);
-    return Array.from(bytes, byte => alphabet[byte % alphabet.length]).join('');
+  function participantCode(value) {
+    const code = String(value).trim();
+    return /^(?:0?[1-9]|1[0-9]|20)$/.test(code) ? code.padStart(2, '0') : null;
+  }
+  function seedFor(participant) {
+    const code = participantCode(participant);
+    if (!code) throw new Error('Invalid participant');
+    return protocol.materialSeed + '-' + code;
   }
   function generator(seed, scope) {
     let state = 2166136261;
-    for (const char of 'v2:' + scope + ':' + seed) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
+    for (const char of 'v3:' + scope + ':' + seed) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
     if (!state) state = 1;
     return () => { state ^= state << 13; state ^= state >>> 17; state ^= state << 5; return state >>> 0; };
   }
@@ -133,37 +144,44 @@ main{padding:26px 0 48px}
     }
     return result;
   }
-  function materialsFor(seed) {
+  function setOrderFor(participant) {
+    return shuffled(protocol.sets, generator(seedFor(participant), 'sets'));
+  }
+  function setFor(participant, repetition) {
+    return setOrderFor(participant)[repetition];
+  }
+  function materialsFor(participant) {
+    const seed = seedFor(participant);
     const next = generator(seed, 'codes');
     const used = new Set();
     const materials = { practice: original.practice };
-    for (const set of ['X', 'Y']) {
-      const names = shuffled(original[set], generator(seed, 'source-' + set));
-      materials[set] = names.map(item => {
+    for (const condition of ['A', 'B']) {
+      materials[condition] = setOrderFor(participant).map((set, repetition) => {
+        const names = shuffled(original[set], generator(seed, 'source-' + condition + '-' + repetition));
+        return names.map(item => {
         let code;
         do {
-          code = Array.from({ length: 3 }, () => letters[integer(next, letters.length)] + digits[integer(next, digits.length)]).join('');
-        } while (used.has(code) || new Set([code[0], code[2], code[4]]).size !== 3 || new Set([code[1], code[3], code[5]]).size !== 3);
+          code = letters[integer(next, letters.length)] + digits[integer(next, digits.length)] +
+            letters[integer(next, letters.length)] + digits[integer(next, digits.length)] + letters[integer(next, letters.length)];
+        } while (used.has(code) || new Set([code[0], code[2], code[4]]).size !== 3 || code[1] === code[3]);
         used.add(code);
         return [item, code];
+        });
       });
     }
     return materials;
   }
-  function targetRowsFor(seed, repetition) {
+  function targetRowsFor(participant, repetition) {
+    const seed = seedFor(participant);
     const rows = Array.from({ length: protocol.rowCount }, (_, index) => index + 1);
     return shuffled(rows, generator(seed, 'target-order-' + repetition)).slice(0, protocol.targetCount);
   }
   function groupFor(participant) {
-    if (!/^A(0[1-9]|1[0-9]|20)$/.test(participant)) throw new Error('Invalid participant');
-    return protocol.participantGroups[Number(participant.slice(1)) - 1];
+    const code = participantCode(participant);
+    if (!code) throw new Error('Invalid participant');
+    return protocol.participantGroups[Number(code) - 1];
   }
-  function pairCode(seed, set) { return '2-' + seed + '-' + set; }
-  function parsePair(value) {
-    const match = String(value).trim().toUpperCase().match(pairPattern);
-    return match ? { seed: match[1], set: match[2] } : null;
-  }
-  return { protocol, newSeed, groupFor, pairCode, parsePair, materialsFor, targetRowsFor,
+  return { protocol, participantCode, seedFor, groupFor, setFor, setOrderFor, materialsFor, targetRowsFor,
     version: protocol.generatorVersion, targetOrderVersion: protocol.targetOrderVersion, practice: original.practice };
 })();
 
@@ -206,7 +224,7 @@ main{padding:26px 0 48px}
 
   function createSession(participant) {
     const group = sourceData.groupFor(participant);
-    const seed = sourceData.newSeed();
+    const seed = sourceData.seedFor(participant);
     return {
       participant,
       submissionId: crypto.randomUUID(),
@@ -215,10 +233,10 @@ main{padding:26px 0 48px}
       stage: 'practice',
       seed,
       surveys: assignments[group].map(() => null),
-      records: assignments[group].flatMap(([condition, set], block) =>
+      records: assignments[group].flatMap((condition, block) =>
         Array.from({ length: protocol.repetitions }, (_, repetition) => ({
-          block: block + 1, repetition: repetition + 1, condition, set,
-          targetRows: sourceData.targetRowsFor(seed, repetition), answers: Array(protocol.targetCount).fill(''),
+          block: block + 1, repetition: repetition + 1, condition, set: sourceData.setFor(participant, repetition),
+          targetRows: sourceData.targetRowsFor(participant, repetition), answers: Array(protocol.targetCount).fill(''),
         }))),
     };
   }
@@ -228,7 +246,7 @@ main{padding:26px 0 48px}
   }
 
   function targets(record) {
-    return record.targetRows.map(row => materials[record.set][row - 1]);
+    return record.targetRows.map(row => materials[record.condition][record.repetition - 1][row - 1]);
   }
 
   function score(record) {
@@ -277,18 +295,29 @@ main{padding:26px 0 48px}
   }
 
   function scoreControls() {
-    return scales.map(([id, label, min, max]) => {
-      const options = Array.from({ length: 21 }, (_, n) => '<option value="' + (n * 5) +
-        '">' + (n === 0 ? '0 — ' + min : n === 20 ? '100 — ' + max : n * 5) + '</option>').join('');
-      return '<label class="score">' + label + '<select required name="' + id +
-        '"><option value="" selected disabled>점수 선택</option>' + options + '</select></label>';
-    }).join('');
+    return scales.map(([id, label, min, max]) => '<label class="slider-score" for="workload-' + id + '">' +
+      '<span class="slider-title"><span>' + label + '</span><output id="score-' + id + '">선택 전</output></span>' +
+      '<input id="workload-' + id + '" name="' + id + '" type="range" min="0" max="100" step="5" value="50" aria-label="' + label + '" aria-valuetext="선택 전">' +
+      '<span class="slider-ends"><span>0 ' + min + '</span><span>100 ' + max + '</span></span></label>').join('');
+  }
+
+  function setupWorkloadSliders(form) {
+    for (const slider of form.querySelectorAll('input[type="range"]')) {
+      slider.setCustomValidity('막대를 움직여 점수를 선택해 주세요.');
+      const choose = () => {
+        slider.setCustomValidity('');
+        slider.setAttribute('aria-valuetext', slider.value + '점');
+        document.getElementById('score-' + slider.name).textContent = slider.value + '점';
+      };
+      slider.addEventListener('input', choose);
+      slider.addEventListener('change', choose);
+    }
   }
 
   function showIntro() {
     app.innerHTML = '<div class="intro"><section class="card start"><h1 tabindex="-1">원본을 보고<br>코드를 입력해 주세요</h1>' +
       '<p class="lead">태블릿 원본과 노트북 원본으로 세 번씩, 총 여섯 번 진행합니다. 화면 안내에 따라 혼자 진행하며, 준비와 설문까지 약 15분이 걸립니다.</p>' +
-      '<form id="entry" autocomplete="off"><label class="number">배정받은 참가자 번호<input name="participant" type="text" pattern="[Aa](0[1-9]|1[0-9]|20)" maxlength="3" autocapitalize="characters" spellcheck="false" placeholder="예: A01"' + (testMode ? ' value="A01"' : '') + ' required><small>A01부터 A20까지 배정받은 번호를 입력해 주세요.</small></label>' +
+      '<form id="entry" autocomplete="off"><label class="number">참가 번호<input name="participant" type="text" inputmode="numeric" pattern="0?[1-9]|1[0-9]|20" maxlength="2" autocomplete="off" placeholder="예: 01"' + (testMode ? ' value="01"' : '') + ' required><small>01~20 중 배정받은 번호를 입력해 주세요. 태블릿에도 같은 번호를 입력합니다.</small></label>' +
       '<div class="actions"><button class="primary" type="submit">연습 시작</button></div></form></section>' +
       '<section class="card steps"><h2>시작 전 확인</h2><ol><li>노트북을 몸 앞에 두고, 태블릿은 책상 왼쪽에 평평하게 놓아 주세요.</li>' +
       '<li>원본에서 품목을 찾고 코드를 입력합니다. 제출하기 전에 원본과 대조해 주세요.</li>' +
@@ -299,8 +328,8 @@ main{padding:26px 0 48px}
       event.preventDefault();
       const form = event.currentTarget;
       if (!form.reportValidity()) return;
-      session = createSession(normalize(new FormData(form).get('participant')));
-      materials = sourceData.materialsFor(session.seed);
+      session = createSession(sourceData.participantCode(new FormData(form).get('participant')));
+      materials = sourceData.materialsFor(session.participant);
       render();
     });
   }
@@ -332,17 +361,13 @@ main{padding:26px 0 48px}
   function showPrepare() {
     const record = current();
     const tablet = record.condition === 'A';
-    const code = sourceData.pairCode(session.seed, record.set);
     const instructions = tablet
-      ? '<p class="setup-note">' + (record.repetition === 1
-        ? '태블릿 원본 페이지에 아래 코드를 입력해 주세요. 품목 16개가 보이면 시작해 주세요.'
-        : '태블릿의 원본은 그대로 두세요. 이번에 입력할 품목 순서는 다시 섞입니다.') + '</p>' +
-        '<p><span class="access-code" aria-label="원본 코드 ' + code + '">' + code + '</span></p>'
-      : '<p class="setup-note">노트북 왼쪽 원본에 품목 16개가 보이는지 확인하고, 태블릿 화면을 꺼 주세요.</p>';
+      ? '<p class="setup-note">태블릿에 같은 참가 번호 <strong>' + session.participant + '</strong>를 입력하고, <strong>원본 ' + record.set + '</strong> 버튼을 눌러 주세요. 품목 14개가 보이면 시작해 주세요.</p>'
+      : '<p class="setup-note">노트북 왼쪽의 <strong>원본 ' + record.set + '</strong>에 품목 14개가 보이는지 확인하고, 태블릿 화면을 꺼 주세요.</p>';
     app.innerHTML = head(conditionNames[record.condition], record.block + ' / 2블록 / ' + record.repetition + ' / 3회 준비') +
-      '<div class="board">' + sourcePanel('원본 ' + record.set, tablet ? null : materials[record.set]) +
+      '<div class="board">' + sourcePanel('원본 ' + record.set, tablet ? null : materials[record.condition][record.repetition - 1]) +
       '<form class="work" id="prepare"><h2>시작 전 준비</h2>' + instructions +
-      '<p class="setup-note">여덟 개의 6글자 코드를 가능한 한 정확하고 빠르게 입력하고, 제출 전 원본과 대조해 주세요.</p>' +
+      '<p class="setup-note">이번 시행은 원본 ' + record.set + '입니다. 품목 순서와 코드는 매번 바뀝니다. 여덟 개의 5글자 코드를 정확하고 빠르게 입력하고 제출 전 대조해 주세요.</p>' +
       '<div class="actions"><button class="primary" type="submit">입력 시작</button></div></form></div>';
     document.getElementById('prepare').addEventListener('submit', event => {
       event.preventDefault();
@@ -355,7 +380,7 @@ main{padding:26px 0 48px}
     const record = current();
     const tablet = record.condition === 'A';
     app.innerHTML = head(conditionNames[record.condition], record.block + ' / 2블록 / ' + record.repetition + ' / 3회') +
-      '<div class="board">' + sourcePanel('원본 ' + record.set, tablet ? null : materials[record.set]) +
+      '<div class="board">' + sourcePanel('원본 ' + record.set, tablet ? null : materials[record.condition][record.repetition - 1]) +
       '<form class="work" id="typing"><div class="stephead"><h2>코드 입력</h2><output class="timer" id="timer" role="timer" aria-label="남은 시간">1:30</output></div>' +
       '<p class="setup-note">여덟 개를 입력하고 원본과 대조한 뒤 제출해 주세요.</p>' +
       codeFields(targets(record), record.answers) + '<div class="actions"><button class="primary" id="typing-submit" type="submit">입력 제출</button>' + testButton('입력 건너뛰기') + '</div></form></div>';
@@ -388,9 +413,9 @@ main{padding:26px 0 48px}
         const seconds = Math.max(0, Math.round((Date.now() - record.startedAt) / 100) / 10);
         if (value && record.taskLog[0] === null) record.taskLog[0] = seconds;
         if (completedValues.has(index) && completedValues.get(index) !== value) revised.add(index);
-        if (value.length === 6 && !completedValues.has(index)) completedValues.set(index, value);
+        if (value.length === protocol.codeLength && !completedValues.has(index)) completedValues.set(index, value);
         record.taskLog[3] = revised.size;
-        if (record.taskLog[1] === null && record.answers.every(answer => normalize(answer).length === 6)) record.taskLog[1] = seconds;
+        if (record.taskLog[1] === null && record.answers.every(answer => normalize(answer).length === protocol.codeLength)) record.taskLog[1] = seconds;
       }
     });
     form.addEventListener('submit', event => {
@@ -438,7 +463,7 @@ main{padding:26px 0 48px}
       '<fieldset><legend>목 불편감</legend>' + neckSelect('neckAfter', '지금 목이 얼마나 불편한가요?') + '</fieldset>' +
       postureQuestion('postureRead', '원본을 읽을 때 주로 취한 고개 자세는 무엇이었나요?', '품목을 찾거나 코드를 대조하려고 원본을 보는 동안을 떠올려 주세요.') +
       postureQuestion('postureType', '코드를 키보드로 입력할 때 주로 취한 고개 자세는 무엇이었나요?', '키보드로 문자를 입력하는 동안을 떠올려 주세요. 기억나지 않으면 불확실함을 선택해 주세요.') +
-      '<fieldset><legend>작업부하 6문항</legend><div class="scores">' + scoreControls() +
+      '<fieldset><legend>작업부하 6문항</legend><p class="muted posture-note">막대를 각각 움직여 점수를 선택해 주세요. 선택한 점수가 표시됩니다.</p><div class="scores">' + scoreControls() +
       '</div></fieldset><div class="actions"><button class="primary" type="submit">' +
       (record.block === 1 ? '다음 블록 준비' : testMode ? '실험 마치기' : '실험 마치고 전송') + '</button>' + testButton('설문 건너뛰기') + '</div></form></section>';
     const advance = () => {
@@ -451,7 +476,9 @@ main{padding:26px 0 48px}
         if (testMode) render(); else void sendResults();
       }
     };
-    document.getElementById('survey').addEventListener('submit', event => {
+    const survey = document.getElementById('survey');
+    setupWorkloadSliders(survey);
+    survey.addEventListener('submit', event => {
       event.preventDefault();
       const form = event.currentTarget;
       if (!form.reportValidity()) return;
@@ -480,10 +507,10 @@ main{padding:26px 0 48px}
       allocationVersion: protocol.allocationVersion,
       generatorVersion: sourceData.version,
       targetOrderVersion: sourceData.targetOrderVersion,
-      blocks: assignments[run.group].map(([condition, set], block) => ({
-        condition, set, ...run.surveys[block],
+      blocks: assignments[run.group].map((condition, block) => ({
+        condition, ...run.surveys[block],
         trials: run.records.filter(record => record.block === block + 1).map(record => ({
-          repetition: record.repetition, targetRows: record.targetRows,
+          repetition: record.repetition, set: record.set, targetRows: record.targetRows,
           elapsed: record.elapsed, timedOut: record.timedOut, responses: record.answers, taskLog: record.taskLog,
         })),
       })),
@@ -516,7 +543,7 @@ main{padding:26px 0 48px}
     };
     const rows = session.records.map(record => {
       const counts = score(record);
-      return '<tr><th scope="row">' + conditionNames[record.condition] + ' / ' + record.repetition + '회</th><td>' +
+      return '<tr><th scope="row">' + conditionNames[record.condition] + ' / ' + record.repetition + '회 / 원본 ' + record.set + '</th><td>' +
         (record.timedOut ? '90초 (시간초과)' : record.skippedInput ? '건너뜀' : record.elapsed.toFixed(1) + '초') +
         '</td><td>' + counts.correct + ' / 8</td><td>' + counts.wrong + '</td><td>' + counts.blank + '</td></tr>';
     }).join('');
