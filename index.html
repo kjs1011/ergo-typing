@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="태블릿과 노트북에서 원본을 읽고 코드를 입력하는 인간공학실험">
 <meta name="theme-color" content="#f4f7f9">
-<meta name="experiment-version" content="2026-11-19-seeded-xyz-v6-observation-v2">
+<meta name="experiment-version" content="2026-11-19-seeded-xyz-v6-observation-v3-simple">
 <title>자료 입력 자세 실험</title>
 <style>*{box-sizing:border-box}
 :root{color-scheme:light;font-family:Inter,"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;color:#18293a;background:#f4f7f9;line-height:1.55;font-synthesis:none}
@@ -99,68 +99,29 @@ main{padding:26px 0 48px}
 .tablet-source td:last-child{width:40%;font:700 1.05em/1.25 Consolas,monospace;letter-spacing:.08em}
 .tablet-source button{margin-top:12px}
 [hidden]{display:none!important}
-.capture-card,.observation-page{max-width:1050px;margin-inline:auto}
-.capture-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start;margin:20px 0}
-.capture-figure{margin:0;min-width:0}
-.capture-figure img{display:block;width:100%;height:auto;border-radius:12px;border:1px solid #dce6ed}
-.capture-figure figcaption{font-size:.875rem;color:#455d70;margin-top:8px}
-.capture-steps{margin:0;padding-left:24px;display:grid;gap:18px}
-.capture-steps p{margin-top:5px;color:#354c5e}
-.checkline{display:flex;align-items:flex-start;gap:9px;margin:12px 0;line-height:1.5}
-.checkline input{accent-color:#185485;flex:none;width:18px;height:18px;margin-top:3px}
-.file-note,.record-context{padding:12px 16px;background:#eaf4fc;border-radius:9px;margin-top:18px;overflow-wrap:anywhere}
-.recording-note{padding:13px 15px;border-radius:10px;border:1px solid #a8c8df;background:#eef7ff;margin:12px 0;color:#23435b}
-.recording-note h3{margin:0 0 6px;font-size:1rem}
-.recording-note .checkline{font-size:.95rem;margin-bottom:0}
-.countdown-card{max-width:650px;margin:8vh auto;text-align:center}
-.countdown{display:block;font-size:6rem;font-variant-numeric:tabular-nums;font-weight:800;color:#185485;line-height:1.6}
-.observation-next{border-top:1px solid #dce6ed;margin-top:24px;padding-top:20px}
-.observation-next p{margin-top:8px}
-.capture-overview,.measurement-help{margin:20px 0;background:#fff;border:1px solid #d2dfe8;border-radius:12px;padding:16px 20px}
-summary{cursor:pointer;font-weight:750}
-.help-body{padding-top:12px;color:#354c5e}
-.help-body h3{font-size:1.05rem;color:#18293a;margin:18px 0 7px}
-.help-body p+p{margin-top:12px}
-.angle-diagram{display:block;width:min(100%,650px);height:auto;margin:14px 0;background:#f4f8fb;border-radius:10px}
-.baseline-card{margin:22px 0}
-.baseline-card h2{margin-bottom:9px}
-.measure-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin-top:15px}
-.measure-field{display:grid;gap:7px;margin:14px 0;color:#243d50;font-size:1rem}
-.measure-field input,.measure-field select,.measure-field textarea{min-width:0;width:100%;border:1px solid #9fb3c2;border-radius:7px;padding:9px 11px;background:white;color:#18293a;min-height:44px}
-.measure-field input:disabled,.measure-field select:disabled{background:#edf1f4;color:#5c7080}
-.measure-field textarea{resize:vertical}
-.measure-condition{border:1px solid #c6d8e5;border-radius:14px;padding:22px 24px;background:white;margin:25px 0;min-width:0}
-.measure-condition legend{font-size:1.16rem;font-weight:800;padding:0 9px;color:#185485}
-.sample-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
-.sample-card{border:1px solid #dce6ed;padding:14px;border-radius:10px;background:#f8fbfe;min-width:0}
-.sample-card strong{font-size:.95rem}
-.sample-card .checkline{font-size:.9rem}
-.episode-fields{margin-top:22px;padding-top:18px;border-top:1px solid #dce6ed}
-.episode-fields h3{margin:0 0 8px;font-size:1.05rem}
-.measure-summary{padding:12px 15px;background:#eaf4fc;border-radius:8px;color:#185485;font-size:.95rem;font-variant-numeric:tabular-nums}
-.measure-finish p+p{margin-top:10px}
-#submit-status{margin-top:10px;color:#185485}
-.scan-section,.rula-section{margin:26px 0;padding-top:20px;border-top:1px solid #dce6ed}
-.scan-section h3,.rula-section h3,.supplement-heading{font-size:1.1rem;margin:0 0 10px;color:#185485}
-.scan-section p+p,.rula-section p+p{margin-top:8px}
-.table-scroll{overflow-x:auto;margin:14px 0}
-.scan-table{width:100%;border-collapse:collapse;min-width:530px}
-.scan-table th,.scan-table td{text-align:left;padding:9px 10px;border-bottom:1px solid #dce6ed}
-.scan-table th{font-size:.95rem;background:#f2f7fb}
-.scan-table select{font:inherit;width:100%;min-height:42px;padding:6px;border:1px solid #9fb3c2;border-radius:6px;background:white;color:#18293a}
-.rula-stage{min-width:0;border:1px solid #c6d8e5;border-radius:10px;margin:18px 0;padding:15px 18px}
-.rula-stage legend{font-size:1rem}
-.representative-label{background:#eaf4fc;padding:11px 13px;border-radius:8px;font-weight:650;color:#234d6c}
-.rula-action{font-size:.95rem;color:#185485;margin-top:12px}
-.plan-link{margin:12px 0}
-.study-plan{max-width:970px;margin-inline:auto}
-.study-plan .card{margin:20px 0}
-.study-plan h2{font-size:1.25rem;margin-bottom:12px}
-.study-plan p+p{margin-top:12px}
-.study-plan li+li{margin-top:9px}
-.study-plan .verdict{border-top:5px solid #185485}
-.study-plan .result{min-width:600px}
-@media(max-width:760px){.capture-layout{grid-template-columns:1fr}.sample-grid{grid-template-columns:1fr}.measure-grid{grid-template-columns:1fr;gap:0}.measure-condition{padding:14px 13px}.capture-overview,.measurement-help{padding:14px}.capture-figure{max-width:580px;margin-inline:auto}.phase{white-space:normal}.capture-steps{gap:15px}}
+summary{cursor:pointer;font-weight:700}
+.checkline{display:flex;align-items:center;gap:8px;margin:12px 0}
+.checkline input{width:18px;height:18px;accent-color:#185485}
+.recording-note{padding:12px 14px;border:1px solid #a8c8df;border-radius:9px;background:#eef7ff;margin:12px 0;color:#23435b}
+.recording-note h3{font-size:1rem;margin:0 0 7px}
+.camera-example{margin-top:10px}
+.camera-example img{display:block;width:100%;height:auto;margin-top:10px;border-radius:8px}
+.camera-example p{font-size:.875rem;margin-top:7px}
+.review-note{padding:10px 13px;background:#eaf4fc;border:1px solid #c4d9e8;border-radius:8px;color:#234d6c;font-size:.95rem;margin-bottom:16px}
+.simple-observation{margin-top:22px;padding-top:18px;border-top:1px solid #dce6ed}
+.simple-observation>p{margin-top:8px}
+.simple-condition{min-width:0;border:1px solid #c6d8e5;border-radius:10px;margin:18px 0;padding:14px 16px}
+.simple-condition legend{font-weight:750;color:#185485;padding:0 7px}
+.sample-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.measure-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.measure-field{display:grid;gap:6px;margin:10px 0;color:#243d50}
+.measure-field input,.measure-field select{width:100%;min-width:0;min-height:42px;padding:8px;border:1px solid #9fb3c2;border-radius:7px;background:white;color:#18293a}
+.measure-field input:disabled,.measure-field select:disabled{background:#edf1f4;color:#607787}
+.optional-measures{border-top:1px solid #dce6ed;margin-top:12px;padding-top:10px}
+.optional-measures p,.measure-hint{font-size:.9rem;color:#455d70;margin-top:9px}
+.measure-summary{font-size:.9rem;color:#185485;margin-top:10px}
+.input-results{margin-top:20px}
+@media(max-width:620px){.sample-grid,.measure-grid{grid-template-columns:1fr;gap:0}.simple-condition{padding:12px}.simple-observation .actions{align-items:stretch}.simple-observation .actions button{width:100%}}
 @media(max-height:760px){.tablet-shell{padding:10px 0}.tablet-source table{font-size:.9rem}.tablet-source th,.tablet-source td{padding:2px 12px}.tablet-source .stephead h1{font-size:1.3rem}.tablet-source button{min-height:36px;margin-top:8px}}
 @media(max-width:690px){.shell{width:calc(100% - 22px)}.intro{grid-template-columns:1fr;padding-top:0;gap:12px}.start,.steps,.card{padding:17px}.source,.work{padding:10px 8px}.source th,.source td{padding:5px 4px;overflow-wrap:anywhere}.field-row{grid-template-columns:1fr;gap:1px}.field-row input{height:30px}.scores{grid-template-columns:1fr}.phase{font-size:.72rem}.course{font-size:.7rem}.stephead{gap:5px}.result th,.result td{padding:5px;font-size:.8rem}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}}
@@ -259,122 +220,179 @@ summary{cursor:pointer;font-weight:750}
 
 const observationModel = (() => {
   'use strict';
-  const version = 2;
-  const fractions = [0.25, 0.5, 0.75];
-  const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/;
-  const participant = /^A(0[1-9]|1[0-9]|20)$/;
-  const angle = value => Number.isFinite(value) && value >= -90 && value <= 90;
-  const text = value => typeof value === 'string' && value.length <= 400;
-  const sampleTimes = seconds => fractions.map(fraction => Math.round(seconds * fraction * 10) / 10);
-  const scanTimes = seconds => Array.from({ length: 9 }, (_, index) => Math.round(seconds * (index + 1)) / 10);
-  const phases = ['typing', 'non_typing'];
-  const scanPhases = [...phases, 'mixed', 'unclear'];
+  const version = 3;
   const postures = ['straight', 'flexed', 'rotated', 'flexed_rotated', 'unclear'];
-  const integer = (value, low, high) => Number.isInteger(value) && value >= low && value <= high;
-  function representative(scan, phase) {
-    const candidates = scan.map((item, index) => ({ ...item, index })).filter(item => item.phase === phase && postures.includes(item.posture) && item.posture !== 'unclear');
-    if (!candidates.length) return null;
-    const counts = {};
-    candidates.forEach(item => { counts[item.posture] = (counts[item.posture] || 0) + 1; });
-    const maximum = Math.max(...Object.values(counts));
-    return candidates.find(item => counts[item.posture] === maximum);
-  }
-  function actionLevel(score) {
-    return !integer(score, 1, 7) ? null : score <= 2 ? 1 : score <= 4 ? 2 : score <= 6 ? 3 : 4;
-  }
-  function validAssessments(condition) {
-    if (!Array.isArray(condition.assessments) || condition.assessments.length !== 2) return false;
-    return condition.assessments.every((assessment, index) => {
-      if (!assessment || assessment.phase !== phases[index] || !['assessed', 'unassessable'].includes(assessment.status) || !text(assessment.note)) return false;
-      if (assessment.status === 'unassessable') return assessment.frameIndex === null && assessment.score === null &&
-        assessment.neck === null && assessment.trunk === null && assessment.wrist === null && assessment.recheck === null && assessment.note.trim() !== '' && assessment.worksheetChecked === false;
-      const frame = representative(condition.scan, assessment.phase);
-      return frame !== null && assessment.frameIndex === frame.index && integer(assessment.score, 1, 7) &&
-        integer(assessment.neck, 1, 6) && integer(assessment.trunk, 1, 6) && integer(assessment.wrist, 1, 4) &&
-        (assessment.recheck === null || integer(assessment.recheck, 1, 7)) && assessment.worksheetChecked === true;
-    });
-  }
+  const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/;
+  const sampleTimes = seconds => [0.25, 0.5, 0.75].map(fraction => Number.isFinite(seconds) ? Math.round(seconds * fraction * 10) / 10 : null);
+  const actionLevel = score => !Number.isInteger(score) || score < 1 || score > 7 ? null : score <= 2 ? 1 : score <= 4 ? 2 : score <= 6 ? 3 : 4;
   function validate(record) {
     if (!record || record.kind !== 'posture_observation' || record.observationVersion !== version ||
-        !uuid.test(record.submissionId) || !uuid.test(record.observationId) || !participant.test(record.participant) ||
-        typeof record.seed !== 'string' || !/^\d{6}$/.test(record.seed) || !record.baseline ||
-        !['measured', 'unavailable'].includes(record.baseline.status) || !text(record.baseline.note) ||
-        (record.baseline.status === 'measured' ? !angle(record.baseline.angle) : record.baseline.angle !== null) ||
-        (record.baseline.status === 'unavailable' && !record.baseline.note.trim()) ||
-        !Array.isArray(record.conditions) || record.conditions.length !== 2 || !text(record.assessorCode) || !text(record.recheckAssessorCode) ||
-        !['left', 'right', ''].includes(record.ratedSide) || record.countRule !== 'visual_flexion_bout_v2') return false;
-    if (!record.conditions.every(condition => condition && typeof condition === 'object' && Array.isArray(condition.assessments))) return false;
-    const scored = record.conditions.some(condition => condition.assessments.some(assessment => assessment?.status === 'assessed'));
-    const rechecked = record.conditions.some(condition => condition.assessments.some(assessment => assessment && assessment.recheck !== null));
-    if (scored && (!record.assessorCode.trim() || !record.ratedSide)) return false;
-    if (rechecked && (!record.recheckAssessorCode.trim() || record.recheckAssessorCode.trim() === record.assessorCode.trim())) return false;
+        !uuid.test(record.submissionId) || !uuid.test(record.observationId) || !/^A(0[1-9]|1[0-9]|20)$/.test(record.participant) ||
+        typeof record.seed !== 'string' || !/^\d{6}$/.test(record.seed) || typeof record.reviewOnly !== 'boolean' ||
+        record.countRule !== 'visible_flexion_bout_v3' || !Array.isArray(record.conditions) || record.conditions.length !== 2) return false;
     return record.conditions.every((condition, index) => {
       if (!condition || condition.condition !== ['A', 'B'][index] || condition.repetition !== 2 ||
-          !Number.isFinite(condition.elapsed) || condition.elapsed <= 0 || condition.elapsed > 90 ||
-          !['full', 'partial', 'missing'].includes(condition.status) || !text(condition.note) ||
-          (condition.status !== 'full' && !condition.note.trim()) || !Array.isArray(condition.samples) || condition.samples.length !== 3) return false;
+          !(Number.isFinite(condition.elapsed) && condition.elapsed > 0 && condition.elapsed <= 90 || record.reviewOnly && condition.elapsed === null) ||
+          typeof condition.available !== 'boolean' || !Array.isArray(condition.samples) || condition.samples.length !== 3) return false;
       const times = sampleTimes(condition.elapsed);
-      if (!condition.samples.every((sample, sampleIndex) => sample && sample.time === times[sampleIndex] &&
-          typeof sample.unreadable === 'boolean' && (sample.unreadable ? sample.angle === null : angle(sample.angle)))) return false;
-      if (condition.status === 'missing' && condition.samples.some(sample => !sample.unreadable)) return false;
-      const scans = scanTimes(condition.elapsed);
-      if (!Array.isArray(condition.scan) || condition.scan.length !== 9 || !condition.scan.every((item, scanIndex) => item && item.time === scans[scanIndex] &&
-          scanPhases.includes(item.phase) && postures.includes(item.posture))) return false;
-      if (condition.status === 'missing' && condition.scan.some(item => item.phase !== 'unclear' || item.posture !== 'unclear')) return false;
-      if (!validAssessments(condition) || !['available', 'unavailable'].includes(condition.countStatus)) return false;
-      if (condition.status === 'missing' && condition.assessments.some(assessment => assessment.status === 'assessed')) return false;
-      if (condition.countStatus === 'available') {
-        return condition.status === 'full' &&
-          Number.isInteger(condition.episodes) && condition.episodes >= 0 && condition.episodes <= 500 &&
-          Number.isFinite(condition.flexionSeconds) && condition.flexionSeconds >= 0 && condition.flexionSeconds <= condition.elapsed &&
-          (condition.episodes === 0 ? condition.flexionSeconds === 0 : condition.flexionSeconds >= condition.episodes) &&
-          ['yes', 'no'].includes(condition.startedFlexed) && !(condition.startedFlexed === 'yes' && condition.episodes === 0);
-      }
-      return condition.episodes === null && condition.flexionSeconds === null && condition.startedFlexed === null && condition.note.trim() !== '';
+      if (!condition.samples.every((sample, sampleIndex) => sample && sample.time === times[sampleIndex] && postures.includes(sample.posture))) return false;
+      if (condition.episodes !== null && (!Number.isInteger(condition.episodes) || condition.episodes < 0 || condition.episodes > 500)) return false;
+      if (condition.rulaScore !== null && actionLevel(condition.rulaScore) === null) return false;
+      return condition.available || condition.samples.every(sample => sample.posture === 'unclear') && condition.episodes === null && condition.rulaScore === null;
     });
   }
-  function summary(baseline, condition) {
-    const changesBySample = condition.samples.map(sample => baseline.status === 'measured' && Number.isFinite(baseline.angle) && !sample.unreadable && Number.isFinite(sample.angle)
-      ? Math.round((baseline.angle - sample.angle) * 10) / 10 : null);
-    const changes = changesBySample.filter(value => value !== null);
-    const sorted = [...changes].sort((a, b) => a - b);
-    const middle = Math.floor(sorted.length / 2);
-    const median = !sorted.length ? null : sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
-    const validScans = (condition.scan || []).filter(item => postures.includes(item.posture) && item.posture !== 'unclear');
-    return { changes, changesBySample, median, sampleCount: changes.length,
-      above20Percent: changes.length ? 100 * changes.filter(value => value >= 20).length / changes.length : null,
-      scanCount: validScans.length,
-      flexedScanPercent: validScans.length ? 100 * validScans.filter(item => ['flexed', 'flexed_rotated'].includes(item.posture)).length / validScans.length : null,
-      rotatedScanPercent: validScans.length ? 100 * validScans.filter(item => ['rotated', 'flexed_rotated'].includes(item.posture)).length / validScans.length : null,
-      episodesPerMinute: condition.countStatus === 'available' && Number.isInteger(condition.episodes) ? condition.episodes / condition.elapsed * 60 : null,
-      flexionPercent: condition.countStatus === 'available' && Number.isFinite(condition.flexionSeconds) ? condition.flexionSeconds / condition.elapsed * 100 : null };
+  function summary(condition) {
+    const samples = condition.available ? condition.samples.filter(sample => postures.includes(sample.posture) && sample.posture !== 'unclear') : [];
+    return { validSamples: samples.length,
+      flexedPercent: samples.length ? 100 * samples.filter(sample => ['flexed', 'flexed_rotated'].includes(sample.posture)).length / samples.length : null,
+      rotatedPercent: samples.length ? 100 * samples.filter(sample => ['rotated', 'flexed_rotated'].includes(sample.posture)).length / samples.length : null,
+      episodesPerMinute: condition.available && Number.isInteger(condition.episodes) && Number.isFinite(condition.elapsed) && condition.elapsed > 0 ? condition.episodes / condition.elapsed * 60 : null,
+      rulaActionLevel: condition.available ? actionLevel(condition.rulaScore) : null };
   }
-  return { version, sampleTimes, scanTimes, phases, scanPhases, postures, representative, actionLevel, validate, summary };
+  return { version, postures, sampleTimes, actionLevel, validate, summary };
 })();
 
 const captureGuide = (() => {
   'use strict';
-  function image() {
-    return '<figure class="capture-figure"><img src="./assets/posture-guide.png" alt="정면을 보는 기준 자세와 아래를 보는 작업 자세를 표현한 안내용 인체 모형. 눈 바깥쪽과 귀 앞쪽의 기준점을 표시했습니다." width="1536" height="1024"><figcaption>AI 생성 안내 모형입니다. 실제 평가 사진이 아닙니다. 영상은 머리부터 손목·발까지 보이게 촬영하고, 태블릿은 실험 지시대로 노트북 왼쪽에 놓으세요.</figcaption></figure>';
+  function recording(condition) {
+    return '<aside class="recording-note"><h3>지금 영상을 켜 주세요 · ' + condition + '</h3><p>휴대폰을 몸 오른쪽에 고정해 머리·상체·팔·발이 보이게 촬영하세요. 녹화를 켠 뒤 <strong>입력 시작</strong>을 누르고, 입력을 마치면 촬영을 멈추세요.</p>' +
+      '<details class="camera-example"><summary>촬영 구도 보기</summary><img src="./assets/posture-guide.png" alt="몸 옆에서 앉은 작업 자세를 촬영하는 안내 모형" width="1536" height="1024"><p class="muted">구도 참고용 모형입니다. 태블릿은 노트북 왼쪽에 놓으세요.</p></details></aside>';
   }
-  function steps() {
-    return '<ol class="capture-steps"><li><strong>시작 전 · 기준 모습과 촬영 범위 확인</strong><p>휴대폰을 몸 옆에 고정해 눈·귀·목·몸통과 팔·손목, 의자와 발 지지가 보이게 맞춥니다. 눈높이의 정면 표적을 편하게 보는 사진 1장 또는 3~5초 영상을 남깁니다. 실험 도중 자세를 바르게 고치라는 지시는 하지 않습니다.</p></li>' +
-      '<li><strong>작업 중 · A·B 각각 두 번째 시행 촬영</strong><p>두 번째 입력 직전에 녹화를 시작하고 참가 번호·조건을 소리 내어 남깁니다. 시작 안내음 1번부터 종료 안내음 2번까지를 분석합니다. 카메라·의자·기기 위치는 두 조건에서 유지합니다. 촬영 파일은 직접 보관하세요.</p></li>' +
-      '<li><strong>가능하면 · 같은 시각의 전면 보조 영상</strong><p>노트북 전면 카메라나 별도 기기로 동시에 촬영하면 고개 돌림, 어깨·팔의 좌우 상태를 보완할 수 있습니다. 두 영상에 같은 시작·종료 안내음이 들리게 하세요. 전면 영상만 보고 앞뒤 숙임 각도나 좌우 회전각을 정확한 도수로 입력하지 않습니다.</p></li>' +
-      '<li><strong>실험 후 · 고정 시점 관찰과 RULA 기록</strong><p>사이트가 표시하는 아홉 시점의 행동·머리 자세를 기록합니다. 행동별 선정 장면을 수업 17쪽의 RULA 평가표로 평가하고 값을 입력합니다. 이어서 측면 각도와 영상 전체의 숙임 구간을 보조 지표로 기록합니다. 보이지 않는 항목은 추측하지 않습니다.</p></li></ol>';
+  return { recording };
+})();
+
+const observationUI = (() => {
+  'use strict';
+  const submissionUrl = 'https://script.google.com/macros/s/AKfycbynQkyhiSwBItlhk-QFziBVu7udkPWaZRdDWhXNzJWZ02e4hnA9Jq782aWzwKPsJ_v9/exec';
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+  const read = key => { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } };
+  const write = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; } };
+  function demoContext() {
+    return { participant: 'A01', seed: '000001', submissionId: '00000000-0000-4000-8000-000000000001', test: true,
+      conditions: ['A', 'B'].map(condition => ({ condition, repetition: 2, elapsed: null })) };
   }
-  function measurement() {
-    return '<details class="measurement-help"><summary>촬영 후 무엇을 어떻게 측정하나요?</summary><div class="help-body">' +
-      '<h3>핵심: 행동과 자세를 아홉 시점에서 기록</h3><p>선택한 시행의 실제 입력시간 중 10%부터 90%까지 아홉 장면을 봅니다. 손가락이 키를 누르는 행동이 보이면 키 입력, 누르는 행동이 멈춰 있으면 비입력입니다. 탐색·기억·대조 같은 머릿속 과정을 영상으로 확정하지 않습니다. 행동이 겹치거나 불명확하면 혼합·구분 불가로 기록합니다.</p><p>머리는 중립에 가까움, 숙임, 회전, 숙임+회전, 판독 불가로 기록합니다. 숙임은 기준 모습보다 머리 앞쪽이 분명히 아래로 기울어진 상태이고, 눈만 아래로 움직인 경우는 제외합니다. 기준 예시를 조원끼리 맞춘 뒤 일부 영상을 두 사람이 따로 기록해 일치 여부를 확인하세요.</p>' +
-      '<h3>핵심: 행동 단계별 RULA 평가표</h3><p>각 행동에서 가장 많이 관찰된 머리 자세 범주의 최초 장면을 대표 장면으로 사용합니다. 동률이면 먼저 나온 범주를 선택합니다. 이 선정 기준은 머리 자세 표본에 근거하므로 전신의 가장 흔한 자세나 최악 자세라고 해석하지 않습니다.</p><p>RULA는 목 점수만으로 완성되지 않습니다. 위팔·아래팔·손목·비틀림·목·몸통·다리 지지, 근육 사용·하중을 확인한 뒤 공식 표 A·B·C로 총점을 구하세요. 사이트에는 최종점수와 목·몸통·손목 점수를 옮겨 적고 완성한 평가표를 따로 보관합니다. 같은 시각의 보조 영상을 사용할 수 있지만 다른 시행이나 다른 자세의 신체 부위를 섞어 한 점수를 만들지 않습니다. 필수 부위가 안 보이면 평가 불가로 남깁니다.</p>' +
-      '<h3>보조: 기준 대비 머리 기울기 변화</h3>' +
-      '<svg class="angle-diagram" viewBox="0 0 600 170" role="img" aria-label="귀에서 눈으로 향하는 선이 수평선 위면 양수, 아래면 음수로 입력하는 각도 기준"><g fill="none" stroke-width="3"><path d="M45 80h200M345 80h200" stroke="#a2b5c3" stroke-dasharray="5 5"/><path d="M70 80l125-35M370 80l125 48" stroke="#185485"/></g><g fill="#e68537"><circle cx="70" cy="80" r="6"/><circle cx="370" cy="80" r="6"/></g><g fill="#209b98"><circle cx="195" cy="45" r="6"/><circle cx="495" cy="128" r="6"/></g><g fill="#18293a" font-size="17"><text x="58" y="110">귀</text><text x="193" y="33">눈</text><text x="65" y="150">눈이 수평선 위: +각도</text><text x="358" y="110">귀</text><text x="510" y="135">눈</text><text x="355" y="160">눈이 수평선 아래: −각도</text></g></svg>' +
-      '<p>측면의 같은 쪽 귀 이주에서 눈 바깥쪽 끝으로 선을 그어 수평선과의 각도를 잽니다. 눈이 위면 양수, 아래면 음수입니다. 기준 사진과 시행의 25%·50%·75% 시점을 같은 방법으로 재면 사이트가 기준 각도−작업 각도로 변화를 계산합니다. 몸통 움직임도 섞이므로 목 관절만의 굽힘각이나 RULA 목 점수로 자동 환산하지 않습니다. 고개가 옆으로 돌아가거나 기준점이 가려진 장면은 판독 불가로 표시합니다.</p>' +
-      '<h3>보조: 관찰상 숙임 구간 수와 합계 시간</h3><p>세 장의 사진이나 아홉 장면을 세지 말고 영상 전체를 봅니다. 기준 모습보다 머리가 분명히 아래로 기울어진 상태가 1초 이상이면 숙임 구간 시작, 중립에 가까운 모습으로 1초 이상 복귀하면 종료합니다. 시작·종료 조건을 확인한 후 처음 진입·복귀한 시각을 기록합니다. 같은 자세로 계속 숙이고 있으면 1구간입니다. 시작부터 이미 숙인 상태도 1초 이상 보이면 1구간으로 세고 별도로 표시합니다. 마지막까지 이어지면 종료 안내음까지만 기록합니다.</p><p>각 구간의 시작~종료 시간을 더해 합계 시간을 입력합니다. 1초는 짧은 흔들림을 제외하는 본 실험의 관찰 규칙입니다. 이 값은 특정 각도 이상 노출시간이나 임상적 위험 기준이 아닙니다. 영상이 끊기거나 진입·복귀가 안 보이면 전체 구간 수·합계 시간은 결측으로 남깁니다. 정확한 각도를 못 잰 것과 육안으로 구간을 구분할 수 없는 것은 별개입니다.</p>' +
-      '<h3>예비 확인과 기록 보관</h3><p>본실험 전 조원 1명으로 A·B를 찍어 머리·팔·손목·발 지지까지 평가 가능한지 확인하세요. 구도는 이후 참가자에게도 같은 기준을 적용합니다. 일부 영상·평가표를 다른 조원이 독립적으로 기록해 차이를 확인하고, 측정 시점·평가표·판독 불가 사유를 보관합니다. 영상과 사진을 이 웹사이트에 업로드할 필요는 없습니다.</p>' +
-      '<p><a href="https://www.ergo.human.cornell.edu/Pub/AHquest/RULAworksheet.pdf" target="_blank" rel="noopener">RULA 평가표</a> · <a href="https://www.kinovea.org/help/en/measurement/angle.html" target="_blank" rel="noopener">측면 각도 측정 도움말</a> · <a href="./study-plan.html">보고서 구성과 해석 범위</a></p></div></details>';
+  function loadContext() {
+    let context;
+    try { if (location.hash.length > 1) context = JSON.parse(decodeURIComponent(location.hash.slice(1))); } catch { /* Try this browser's saved record. */ }
+    const key = new URLSearchParams(location.search).get('submission') || read('posture-context-latest');
+    context ||= key ? read('posture-context-' + key) : null;
+    return context && /^A(0[1-9]|1[0-9]|20)$/.test(context.participant) && /^\d{6}$/.test(context.seed) &&
+      Array.isArray(context.conditions) && context.conditions.length === 2 ? context : null;
   }
-  return { image, steps, measurement };
+  function mount(root, context) {
+    const review = context.test === true;
+    const draftKey = 'posture-draft-v3-' + (review ? 'review-' : '') + context.submissionId;
+    const draft = read(draftKey);
+    const observationId = draft?.observationId || crypto.randomUUID();
+    let ready = false;
+    let sending = false;
+    const names = { straight: '정면에 가까움', flexed: '고개 숙임', rotated: '옆으로 돌림', flexed_rotated: '숙임 + 돌림', unclear: '잘 안 보임' };
+    root.innerHTML = '<div class="simple-observation"><h2>촬영한 영상 확인</h2><p class="muted">A·B 두 번째 작업 영상에서 실제 작업 부분만 봐 주세요. 파일을 올릴 필요는 없습니다.</p>' +
+      (review ? '<p class="review-note">미리보기입니다. 입력값은 실제 실험 결과로 전송되지 않습니다.</p>' : '') +
+      '<form id="posture-measure-form" autocomplete="off">' + context.conditions.map(condition => {
+        const code = condition.condition;
+        const times = observationModel.sampleTimes(condition.elapsed);
+        return '<fieldset class="simple-condition"><legend>' + code + ' · ' + (code === 'A' ? '태블릿 원본' : '노트북 원본') + '</legend>' +
+          '<label class="checkline"><input type="checkbox" name="' + code + '_missing"> 영상이 없거나 확인할 수 없어요</label>' +
+          '<div class="sample-grid">' + times.map((time, index) => '<label class="measure-field"><span>' + ['초반 · 25%', '중간 · 50%', '후반 · 75%'][index] + (time === null ? '' : ' (' + time.toFixed(1) + '초)') + '</span><select name="' + code + '_pose' + index + '" required><option value="">고개 자세 선택</option>' + observationModel.postures.map(posture => '<option value="' + posture + '">' + names[posture] + '</option>').join('') + '</select></label>').join('') + '</div>' +
+          '<details class="optional-measures"><summary>추가 기록 · 선택</summary><div class="measure-grid"><label class="measure-field">숙였다가 다시 든 구간 수 (회)<input name="' + code + '_episodes" type="number" min="0" max="500" step="1" inputmode="numeric"></label>' +
+          '<label class="measure-field">중간 장면의 RULA 점수 (1~7)<input name="' + code + '_rula" type="number" min="1" max="7" step="1" inputmode="numeric"></label></div>' +
+          '<p class="muted">계속 숙인 상태는 1회로 셉니다. 처음부터 숙이고 있으면 그 구간도 포함하세요. RULA는 <a href="https://www.ergo.human.cornell.edu/Pub/AHquest/RULAworksheet.pdf" target="_blank" rel="noopener">평가표</a>로 몸 전체를 평가한 경우에만 입력하세요. 모르는 값은 비워 두면 됩니다.</p></details>' +
+          '<p class="measure-summary" id="' + code + '-summary" aria-live="polite"></p></fieldset>';
+      }).join('') + '<p class="measure-hint">화면에서 입력 작업이 시작된 순간을 0초로 보세요. 애매한 장면은 “잘 안 보임”, 실제 횟수가 없으면 0을 입력하세요.</p>' +
+      '<div class="actions"><button class="primary" type="submit">기록 저장 · CSV 다운로드</button><button class="secondary" id="posture-online" type="button" hidden>온라인 전송</button></div>' +
+      '<p class="status" id="posture-status" role="status"></p><p class="error" id="posture-error" role="alert"></p></form></div>';
+    const form = root.querySelector('form');
+    if (draft?.fields) for (const element of form.elements) if (element.name && Object.prototype.hasOwnProperty.call(draft.fields, element.name)) {
+      if (element.type === 'checkbox') element.checked = draft.fields[element.name] === true; else element.value = draft.fields[element.name];
+    }
+    const status = root.querySelector('#posture-status');
+    const error = root.querySelector('#posture-error');
+    function number(name) { const value = form.elements.namedItem(name).value.trim(); return value === '' ? null : Number(value); }
+    function collect() {
+      return { kind: 'posture_observation', observationVersion: observationModel.version, observationId, submissionId: context.submissionId,
+        participant: context.participant, seed: context.seed, reviewOnly: review, countRule: 'visible_flexion_bout_v3',
+        conditions: context.conditions.map(condition => {
+          const code = condition.condition;
+          const available = !form.elements.namedItem(code + '_missing').checked;
+          return { condition: code, repetition: 2, elapsed: Number.isFinite(condition.elapsed) && condition.elapsed > 0 ? condition.elapsed : null, available,
+            samples: observationModel.sampleTimes(condition.elapsed).map((time, index) => ({ time, posture: available ? form.elements.namedItem(code + '_pose' + index).value : 'unclear' })),
+            episodes: available ? number(code + '_episodes') : null, rulaScore: available ? number(code + '_rula') : null };
+        }) };
+    }
+    function synchronize() {
+      for (const condition of context.conditions) {
+        const code = condition.condition;
+        const missing = form.elements.namedItem(code + '_missing').checked;
+        for (const suffix of ['pose0', 'pose1', 'pose2', 'episodes', 'rula']) {
+          const field = form.elements.namedItem(code + '_' + suffix);
+          field.disabled = missing; field.required = !missing && suffix.startsWith('pose');
+        }
+        const block = collect().conditions.find(item => item.condition === code);
+        const summary = observationModel.summary(block);
+        root.querySelector('#' + code + '-summary').textContent = missing ? '영상 없음으로 기록합니다.' :
+          summary.validSamples ? '확인한 장면 ' + summary.validSamples + '/3 · 숙임 ' + Math.round(summary.flexedPercent) + '% · 돌림 ' + Math.round(summary.rotatedPercent) + '%' : '세 장면의 자세를 선택해 주세요.';
+      }
+    }
+    function saveDraft() {
+      const fields = {};
+      for (const element of form.elements) if (element.name) fields[element.name] = element.type === 'checkbox' ? element.checked : element.value;
+      const saved = write(draftKey, { observationId, fields });
+      status.textContent = saved ? '이 브라우저에 임시 저장했어요.' : '창을 닫기 전에 CSV를 다운로드해 주세요.';
+    }
+    function verifiedRecord() {
+      error.textContent = ''; synchronize();
+      if (!form.reportValidity()) return null;
+      const record = collect();
+      if (!observationModel.validate(record)) { error.textContent = '자세를 선택하고, 횟수·RULA 점수를 입력했다면 범위를 확인해 주세요.'; return null; }
+      return record;
+    }
+    function download() {
+      const record = verifiedRecord(); if (!record) return;
+      saveDraft();
+      const headers = ['participant', 'seed', 'submission_id', 'observation_id', 'observation_version', 'review_only', 'condition', 'repetition', 'elapsed_seconds', 'video_available', 'sample_seconds', 'sample_postures', 'valid_samples', 'flexed_sample_percent', 'rotated_sample_percent', 'flexion_bouts', 'bouts_per_minute', 'rula_score', 'rula_action_level', 'rula_sample_time', 'count_rule'];
+      const rows = record.conditions.map(condition => {
+        const summary = observationModel.summary(condition);
+        return [record.participant, record.seed, record.submissionId, record.observationId, record.observationVersion, review ? 1 : 0, condition.condition, 2, condition.elapsed, condition.available ? 1 : 0,
+          JSON.stringify(condition.samples.map(sample => sample.time)), JSON.stringify(condition.samples.map(sample => sample.posture)), summary.validSamples, summary.flexedPercent, summary.rotatedPercent,
+          condition.episodes, summary.episodesPerMinute, condition.rulaScore, summary.rulaActionLevel, condition.rulaScore === null ? null : observationModel.sampleTimes(condition.elapsed)[1], record.countRule];
+      });
+      const cell = value => '"' + String(value ?? '').replace(/"/g, '""') + '"';
+      const blob = new Blob(['\uFEFF' + [headers, ...rows].map(row => row.map(cell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a'); link.href = url; link.download = record.participant + (review ? '_검토용' : '') + '_자세기록.csv'; link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      status.textContent = review ? '검토용 CSV를 저장했어요. 실제 실험 결과로 사용하지 마세요.' : 'CSV 다운로드를 요청했어요. 파일을 제출해 주세요.';
+    }
+    async function send() {
+      if (!ready || sending || review) return;
+      const record = verifiedRecord(); if (!record) return;
+      sending = true; const button = root.querySelector('#posture-online'); button.disabled = true;
+      try {
+        const response = await fetch(submissionUrl, { method: 'POST', credentials: 'omit', body: JSON.stringify(record), signal: AbortSignal.timeout(25000) });
+        const receipt = await response.json();
+        if (!response.ok || !receipt.ok || receipt.observationId !== observationId) throw new Error('unconfirmed');
+        status.textContent = '영상 기록을 전송했어요.';
+      } catch { status.textContent = '전송을 확인하지 못했어요. CSV로 저장해 주세요.'; }
+      finally { sending = false; button.disabled = false; }
+    }
+    async function checkReceiver() {
+      if (review) return;
+      try {
+        const response = await fetch(submissionUrl, { method: 'POST', credentials: 'omit', body: JSON.stringify({ check: true }), signal: AbortSignal.timeout(10000) });
+        const receipt = await response.json(); ready = response.ok && receipt.ok && receipt.observationVersion === observationModel.version;
+        if (ready) root.querySelector('#posture-online').hidden = false;
+      } catch { /* CSV remains available. */ }
+    }
+    form.addEventListener('input', () => { synchronize(); saveDraft(); });
+    form.addEventListener('change', () => { synchronize(); saveDraft(); });
+    form.addEventListener('submit', event => { event.preventDefault(); download(); });
+    root.querySelector('#posture-online').addEventListener('click', send);
+    synchronize(); if (draft) status.textContent = '저장해 둔 입력을 불러왔어요.';
+    void checkReceiver();
+    return { collect, verifiedRecord, synchronize, download };
+  }
+  return { mount, loadContext, demoContext };
 })();
 
 (() => {
@@ -394,12 +412,12 @@ const captureGuide = (() => {
   ];
   const duration = protocol.durationSeconds * 1000;
   const submissionUrl = 'https://script.google.com/macros/s/AKfycbynQkyhiSwBItlhk-QFziBVu7udkPWaZRdDWhXNzJWZ02e4hnA9Jq782aWzwKPsJ_v9/exec';
-  const testMode = new URLSearchParams(location.search).get('test') === '1';
+  const params = new URLSearchParams(location.search);
+  const testMode = params.get('test') === '1';
   const app = document.getElementById('app');
   let ticker;
   let session = null;
   let materials = null;
-  let audio = null;
   if (testMode) {
     document.querySelector('.course').textContent = '테스트 모드';
     document.querySelector('.brand').href = './index.html?test=1';
@@ -424,6 +442,7 @@ const captureGuide = (() => {
       group,
       index: 0,
       stage: 'practice',
+      review: testMode,
       seed,
       surveys: assignments[group].map(() => null),
       records: assignments[group].flatMap((condition, block) =>
@@ -454,11 +473,14 @@ const captureGuide = (() => {
   }
 
   function testButton(label) {
-    return testMode ? '<button class="secondary" id="test-skip" type="button">' + label + '</button>' : '';
+    return '<button class="secondary" id="test-skip" type="button">' + label + '</button>';
   }
 
   function onSkip(action) {
-    document.getElementById('test-skip')?.addEventListener('click', action);
+    document.getElementById('test-skip')?.addEventListener('click', () => {
+      if (session) session.review = true;
+      action();
+    });
   }
 
   function head(title, subtitle) {
@@ -507,34 +529,13 @@ const captureGuide = (() => {
     }
   }
 
-  function activateAudio() {
-    try {
-      const Audio = window.AudioContext || window.webkitAudioContext;
-      if (Audio) { audio ||= new Audio(); void audio.resume(); }
-    } catch { /* The visual countdown remains available. */ }
-  }
-
-  function tone(count) {
-    if (!audio || audio.state !== 'running') return;
-    for (let index = 0; index < count; index++) {
-      const oscillator = audio.createOscillator();
-      const gain = audio.createGain();
-      const start = audio.currentTime + index * 0.22;
-      oscillator.frequency.value = 880;
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(0.12, start + 0.01);
-      gain.gain.linearRampToValueAtTime(0, start + 0.13);
-      oscillator.connect(gain); gain.connect(audio.destination);
-      oscillator.start(start); oscillator.stop(start + 0.15);
-      oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
-    }
-  }
+  function isReview() { return testMode || session?.review === true; }
 
   function preserveObservationContext() {
-    const context = { participant: session.participant, seed: session.seed, submissionId: session.submissionId, test: testMode,
+    const context = { participant: session.participant, seed: session.seed, submissionId: session.submissionId, test: isReview(),
       conditions: ['A', 'B'].map(condition => {
         const record = session.records.find(item => item.condition === condition && item.repetition === 2);
-        return { condition, repetition: 2, elapsed: testMode ? 90 : record.elapsed };
+        return { condition, repetition: 2, elapsed: record.skippedInput ? null : record.elapsed };
       }) };
     try {
       localStorage.setItem('posture-context-' + session.submissionId, JSON.stringify(context));
@@ -545,15 +546,12 @@ const captureGuide = (() => {
 
   function showIntro() {
     app.innerHTML = '<div class="intro"><section class="card start"><h1 tabindex="-1">원본을 보고<br>코드를 입력해 주세요</h1>' +
-      '<p class="lead">태블릿 원본과 노트북 원본으로 세 번씩, 총 여섯 번 진행합니다. 노트북·태블릿과 촬영용 휴대폰을 준비하세요. 입력과 설문은 약 15분이며, 끝난 뒤 사진·영상을 보고 측정값을 입력합니다.</p>' +
+      '<p class="lead">노트북·태블릿·촬영용 휴대폰을 준비하세요. 코드를 여섯 번 입력하고 설문에 답한 뒤, 촬영한 영상의 고개 자세를 확인합니다.</p>' +
       '<form id="entry" autocomplete="off"><label class="number">참가 번호<input name="participant" type="text" pattern="[Aa](0[1-9]|1[0-9]|20)" maxlength="3" autocapitalize="characters" autocomplete="off" placeholder="예: A01"' + (testMode ? ' value="A01"' : '') + ' required><small>A01~A20 중 배정받은 번호를 입력해 주세요. 시드는 시작할 때 자동으로 생성됩니다.</small></label>' +
-      '<div class="actions"><button class="primary" type="submit">연습 시작</button></div></form></section>' +
-      '<section class="card steps"><h2>시작 전 확인</h2><ol><li>노트북을 몸 앞에 두고, 태블릿은 책상 왼쪽에 평평하게 놓아 주세요.</li>' +
-      '<li>원본에서 품목을 찾고 코드를 입력합니다. 제출하기 전에 원본과 대조해 주세요.</li>' +
-      '<li><strong>실험을 끝내기 전에는 응답이 저장되지 않아요.</strong> 새로고침하거나 창을 닫으면 지금까지의 입력이 사라져요.</li>' +
-      '<li>연습 후 기준 사진을 찍고, 각 배치의 두 번째 시행은 휴대폰으로 촬영합니다. 파일은 휴대폰에 보관합니다.</li>' +
-      '<li>각 배치에서 세 번 입력한 뒤 설문에 답해 주세요. 여섯 번을 모두 마치면 기본 결과를 전송하고 자세 측정값을 따로 입력합니다.</li>' +
-      '<li>전송 완료 메시지가 뜰 때까지 기다려 주세요.</li></ol><a href="./observation.html' + (testMode ? '?test=1' : '') + '">촬영·측정 안내와 기록지 보기</a><a href="./study-plan.html">주제 적합성·보고서 구성 보기</a></section></div>';
+      '<div class="actions"><button class="primary" type="submit">연습 시작</button><a class="secondary" href="./index.html?measure=1&amp;test=1">실험 건너뛰고 기록지 보기</a></div></form></section>' +
+      '<section class="card steps"><h2>시작 전 확인</h2><ol><li>노트북은 몸 앞에, 태블릿은 책상 왼쪽에 평평하게 놓으세요.</li>' +
+      '<li>안내가 나오면 영상을 켜고, 원본을 보며 정확하고 빠르게 입력하세요.</li>' +
+      '<li>전송을 마칠 때까지 새로고침하거나 창을 닫지 마세요.</li></ol></section></div>';
     document.getElementById('entry').addEventListener('submit', event => {
       event.preventDefault();
       const form = event.currentTarget;
@@ -578,7 +576,7 @@ const captureGuide = (() => {
     const form = document.getElementById('practice');
     setupSubmit(form, document.getElementById('practice-submit'));
     const finish = () => {
-      session.stage = 'capture';
+      session.stage = 'prepare';
       render();
     };
     form.addEventListener('submit', event => {
@@ -586,20 +584,6 @@ const captureGuide = (() => {
       if (normalize(form.elements.item0.value)) finish();
     });
     onSkip(finish);
-  }
-
-  function showCapture() {
-    app.innerHTML = head('시작 전 · 기준 사진을 남겨 주세요', '촬영 준비') +
-      '<section class="card capture-card"><p class="lead">사진은 지금 찍고, 각도와 영상 측정값은 모든 입력 작업이 끝난 뒤 기록합니다.</p><div class="capture-layout">' + captureGuide.image() + '<div>' + captureGuide.steps() +
-      '<p class="file-note">기준 사진 이름: <strong>' + session.participant + '_' + session.seed + '_기준</strong></p></div></div>' +
-      '<form id="capture-setup"><label class="checkline"><input type="checkbox" required> 휴대폰을 옆에 고정하고 기준 사진 또는 3~5초 영상을 남겼습니다.</label>' +
-      '<label class="checkline"><input type="checkbox" required> 소리를 켰고, 화면의 두 번째 시행 촬영 안내를 확인했습니다.</label><p class="muted">사진·영상은 직접 보관합니다. RULA를 평가할 머리·팔·손목·발 지지가 보이는지 확인하세요. 가능하면 전면 보조 영상을 같은 시각에 촬영합니다. 태블릿은 실험 지시대로 노트북 왼쪽에 두세요.</p>' +
-      '<div class="actions"><button class="primary" type="submit">첫 번째 블록 준비</button>' + testButton('촬영 준비 건너뛰기') + '</div></form></section>';
-    const advance = () => { activateAudio(); session.stage = 'prepare'; render(); };
-    document.getElementById('capture-setup').addEventListener('submit', event => {
-      event.preventDefault(); if (event.currentTarget.reportValidity()) advance();
-    });
-    onSkip(advance);
   }
 
   function showPrepare() {
@@ -612,30 +596,25 @@ const captureGuide = (() => {
       '<div class="board">' + sourcePanel('원본 ' + record.set, tablet ? null : materials[record.condition][record.repetition - 1]) +
       '<form class="work" id="prepare"><h2>시작 전 준비</h2><p class="setup-note">참가 번호 <strong>' + session.participant + '</strong> / 시드 <strong>' + session.seed + '</strong></p>' + instructions +
       '<p class="setup-note">이번 시행은 원본 ' + record.set + '입니다. 품목 순서와 코드는 매번 바뀝니다. 여덟 개의 5글자 코드를 정확하고 빠르게 입력하고 제출 전 대조해 주세요.</p>' +
-      (record.repetition === 2 ? '<aside class="recording-note"><h3>이번 시행은 동영상 촬영</h3><p>휴대폰 녹화를 시작하고 <strong>“' + session.participant + ', 조건 ' + record.condition + ', 2회”</strong>라고 말해 주세요. 측면에서 머리·몸통·팔·손목·발 지지가 보이게 둡니다. 전면 보조 영상이 있다면 함께 시작하세요.</p><p>시작을 누르면 3초 후 안내음 1번과 함께 입력이 시작됩니다. 종료 안내음 2번까지 촬영하세요.</p><label class="checkline"><input type="checkbox" name="recordingReady" required> 녹화를 시작했고 시작 안내음을 들을 수 있습니다.</label></aside>' : '') +
-      (record.repetition === 3 ? '<p class="recording-note">직전 두 번째 시행의 촬영이 끝났습니다. 휴대폰 녹화를 멈추고 세 번째 입력을 계속해 주세요. 각도·횟수는 실험을 모두 마친 뒤 입력합니다.</p>' : '') +
-      '<div class="actions"><button class="primary" type="submit">입력 시작</button></div></form></div>';
+      (record.repetition === 2 ? captureGuide.recording(record.condition) : '') +
+      (record.repetition === 3 ? '<p class="recording-note">촬영을 멈추고 다음 입력을 진행하세요.</p>' : '') +
+      '<div class="actions"><button class="primary" type="submit">입력 시작</button>' + testButton('이번 입력 건너뛰기') + '</div></form></div>';
     document.getElementById('prepare').addEventListener('submit', event => {
       event.preventDefault();
       if (!event.currentTarget.reportValidity()) return;
-      activateAudio();
-      session.stage = 'countdown';
+      session.stage = 'typing';
       render();
     });
+    onSkip(skipTrial);
   }
 
-  function showCountdown() {
+  function skipTrial() {
     const record = current();
-    let left = 3;
-    app.innerHTML = '<section class="card countdown-card">' + head(conditionNames[record.condition], record.repetition + ' / 3회') +
-      '<p>안내음 1번과 함께 입력이 시작됩니다.</p><output id="countdown" class="countdown" aria-live="polite">3</output>' +
-      (record.repetition === 2 ? '<p>휴대폰 녹화를 유지해 주세요.</p>' : '') + '<div class="actions">' + testButton('바로 시작') + '</div></section>';
-    const start = () => { session.stage = 'typing'; render(); tone(1); };
-    onSkip(start);
-    ticker = setInterval(() => {
-      left -= 1;
-      if (left <= 0) start(); else document.getElementById('countdown').textContent = left;
-    }, 1000);
+    session.review = true; record.skippedInput = true; record.elapsed = null; record.timedOut = false;
+    record.taskLog = [null, null, null, 0, 0];
+    if (record.repetition < protocol.repetitions) { session.index += 1; session.stage = 'prepare'; }
+    else session.stage = 'survey';
+    render();
   }
 
   function showTyping() {
@@ -685,7 +664,7 @@ const captureGuide = (() => {
       if (Date.now() - record.startedAt >= duration) finishTyping(true);
       else if (record.answers.every(answer => normalize(answer) !== '')) finishTyping(false);
     });
-    onSkip(() => finishTyping(false, true));
+    onSkip(skipTrial);
     const tick = () => {
       const left = duration - (Date.now() - record.startedAt);
       if (left <= 0) {
@@ -702,7 +681,6 @@ const captureGuide = (() => {
 
   function finishTyping(timedOut, skipped = false) {
     if (session.stage !== 'typing') return;
-    tone(2);
     const record = current();
     const elapsed = Date.now() - record.startedAt;
     record.timedOut = timedOut || elapsed >= duration;
@@ -728,7 +706,7 @@ const captureGuide = (() => {
       postureQuestion('postureType', '코드를 키보드로 입력할 때 주로 취한 고개 자세는 무엇이었나요?', '키보드로 문자를 입력하는 동안을 떠올려 주세요. 기억나지 않으면 불확실함을 선택해 주세요.') +
       '<fieldset><legend>작업부하 6문항</legend><p class="muted posture-note">막대를 각각 움직여 점수를 선택해 주세요. 선택한 점수가 표시됩니다.</p><div class="scores">' + scoreControls() +
       '</div></fieldset><div class="actions"><button class="primary" type="submit">' +
-      (record.block === 1 ? '다음 블록 준비' : testMode ? '실험 마치기' : '실험 마치고 전송') + '</button>' + testButton('설문 건너뛰기') + '</div></form></section>';
+      (record.block === 1 ? '다음 블록 준비' : isReview() ? '실험 마치기' : '실험 마치고 전송') + '</button>' + testButton('설문 건너뛰기') + '</div></form></section>';
     const advance = () => {
       if (session.index < session.records.length - 1) {
         session.index += 1;
@@ -736,7 +714,7 @@ const captureGuide = (() => {
         render();
       } else {
         session.stage = 'done';
-        if (testMode) render(); else void sendResults();
+        if (isReview()) render(); else void sendResults();
       }
     };
     const survey = document.getElementById('survey');
@@ -758,6 +736,7 @@ const captureGuide = (() => {
 
   async function sendResults() {
     const run = session;
+    if (isReview()) { run.sendState = 'review'; render(); return; }
     run.sendState = submissionUrl ? 'sending' : 'unavailable';
     render();
     if (!submissionUrl) return;
@@ -811,15 +790,14 @@ const captureGuide = (() => {
         (record.timedOut ? '90초 (시간초과)' : record.skippedInput ? '건너뜀' : record.elapsed.toFixed(1) + '초') +
         '</td><td>' + counts.correct + ' / 8</td><td>' + counts.wrong + '</td><td>' + counts.blank + '</td></tr>';
     }).join('');
-    app.innerHTML = '<section class="card done">' + head('실험을 마쳤어요', '참가자 ' + session.participant + ' / 시드 ' + session.seed) +
-      '<p class="lead" role="status">' + (testMode ? '테스트를 마쳤어요. 테스트 응답은 전송하지 않아요.' : messages[session.sendState]) + '</p>' +
-      '<table class="result"><thead><tr><th>조건</th><th>시간</th><th>정답</th><th>오답</th><th>빈칸</th></tr></thead><tbody>' + rows +
-      '</tbody></table><div class="observation-next"><h2>다음 · 영상 관찰과 자세 평가 입력</h2><p>기준 모습과 A·B 두 번째 시행 영상을 보며 아홉 시점의 행동·자세, 단계별 RULA, 보조 각도와 숙임 구간을 기록하세요. 측정값은 빈 기록지에서 직접 입력합니다.</p>' +
-      (!observation.stored ? '<p class="error">브라우저 임시 저장을 사용할 수 없습니다. 아래 링크를 열고 측정값 CSV를 다운로드해 보관하세요.</p>' : '<p class="muted">같은 브라우저에서 기록지를 다시 열면 참가 번호와 작업시간이 연결됩니다.</p>') +
-      '<div class="actions"><a class="primary" href="./observation.html?' + (testMode ? 'test=1&' : '') + 'submission=' + session.submissionId + '#' + encodeURIComponent(JSON.stringify(observation.context)) + '">사진·영상 측정값 입력</a></div></div><div class="actions">' +
+    app.innerHTML = '<section class="card done">' + head('마지막 · 영상 확인', '참가자 ' + session.participant) +
+      '<p class="lead" role="status">' + (isReview() ? '건너뛰기가 포함된 검토용 진행입니다. 실제 실험 결과는 전송하지 않습니다.' : messages[session.sendState]) + '</p>' +
+      '<div id="observation-root"></div><details class="input-results"><summary>입력 결과 보기</summary><table class="result"><thead><tr><th>조건</th><th>시간</th><th>정답</th><th>오답</th><th>빈칸</th></tr></thead><tbody>' + rows +
+      '</tbody></table></details><div class="actions">' +
       (session.sendState === 'retry' ? '<button class="primary" id="retry" type="button">다시 전송</button>' : '') +
-      (testMode || session.sendState === 'sent' ? '<button class="secondary" id="reset" type="button">새 참가자 시작</button>' : '') +
+      (isReview() || session.sendState === 'sent' ? '<button class="secondary" id="reset" type="button">처음으로</button>' : '') +
       '</div></section>';
+    observationUI.mount(document.getElementById('observation-root'), observation.context);
     document.getElementById('retry')?.addEventListener('click', sendResults);
     document.getElementById('reset')?.addEventListener('click', resetRun);
   }
@@ -830,15 +808,25 @@ const captureGuide = (() => {
     render();
   }
 
+  function showMeasurementOnly() {
+    const context = testMode ? observationUI.demoContext() : observationUI.loadContext();
+    app.innerHTML = '<section class="card done">' + head('영상 확인', testMode ? '미리보기' : '') +
+      '<div id="observation-root"></div><div class="actions"><a class="secondary" href="./index.html">처음으로</a></div></section>';
+    const root = document.getElementById('observation-root');
+    if (context) observationUI.mount(root, context);
+    else root.innerHTML = '<p>같은 브라우저에서 실험을 마친 뒤 기록을 입력해 주세요.</p>';
+  }
+
   function render() {
     clearInterval(ticker);
-    if (!session) showIntro();
+    if (!session) { if (params.get('measure') === '1') showMeasurementOnly(); else showIntro(); }
     else {
       const screen = {
-        practice: showPractice, capture: showCapture, prepare: showPrepare, countdown: showCountdown, typing: showTyping,
+        practice: showPractice, prepare: showPrepare, typing: showTyping,
         survey: showSurvey, done: showDone,
       }[session.stage];
       screen();
+      if (isReview() && session.stage !== 'done') app.insertAdjacentHTML('afterbegin', '<p class="review-note">검토용 진행 · 실제 결과로 전송되지 않습니다.</p>');
     }
     window.scrollTo(0, 0);
     app.querySelector('h1')?.focus({ preventScroll: true });
