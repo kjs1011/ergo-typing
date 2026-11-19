@@ -41,7 +41,7 @@ main{padding:26px 0 48px}
 .source.is-black{background:#000;border-right:0}
 .source h2{margin-bottom:8px}
 .source table{width:100%;border-collapse:collapse;border:1px solid #d7e1eb;background:#fff;font-size:clamp(.82rem,1.4vw,1rem);line-height:1.22}
-.source th,.source td{padding:5px 11px;text-align:left;border-bottom:1px solid #e4ebf2}
+.source th,.source td{padding:4px 11px;text-align:left;border-bottom:1px solid #e4ebf2}
 .source th{background:#e8f0f7;font-weight:800}
 .source td:last-child{font-family:"Courier Prime",Consolas,monospace;letter-spacing:.08em;width:43%;font-weight:700}
 .work{display:flex;flex-direction:column}
@@ -82,11 +82,12 @@ main{padding:26px 0 48px}
 .tablet-shell{width:min(700px,calc(100% - 28px));margin-inline:auto;padding:clamp(10px,3vh,28px) 0}
 .tablet-shell .actions{align-items:end}
 .tablet-source table{width:100%;border-collapse:collapse;background:white;border:1px solid #d7e1eb;font-size:clamp(.88rem,2.4vw,1.2rem)}
-.tablet-source th,.tablet-source td{text-align:left;border-bottom:1px solid #dce6ed;padding:clamp(2px,1vh,8px) 14px;line-height:1.26}
+.tablet-source th,.tablet-source td{text-align:left;border-bottom:1px solid #dce6ed;padding:clamp(2px,.55vh,5px) 14px;line-height:1.26}
 .tablet-source th{background:#e8f0f7}
 .tablet-source td:last-child{width:40%;font:700 1.05em/1.25 Consolas,monospace;letter-spacing:.08em}
 .tablet-source button{margin-top:12px}
 [hidden]{display:none!important}
+@media(max-height:760px){.tablet-shell{padding:10px 0}.tablet-source table{font-size:.9rem}.tablet-source th,.tablet-source td{padding:2px 12px}.tablet-source .stephead h1{font-size:1.3rem}.tablet-source button{min-height:36px;margin-top:8px}}
 @media(max-width:690px){.shell{width:calc(100% - 22px)}.intro{grid-template-columns:1fr;padding-top:0;gap:12px}.start,.steps,.card{padding:17px}.source,.work{padding:10px 8px}.source th,.source td{padding:5px 4px;overflow-wrap:anywhere}.field-row{grid-template-columns:1fr;gap:1px}.field-row input{height:30px}.scores{grid-template-columns:1fr}.phase{font-size:.72rem}.course{font-size:.7rem}.stephead{gap:5px}.result th,.result td{padding:5px;font-size:.8rem}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important}}
 </style>
@@ -97,7 +98,7 @@ main{padding:26px 0 48px}
     <h1>태블릿 원본</h1>
     <p class="lead">노트북의 준비 화면에 나온 원본 코드를 입력해 주세요.</p>
     <form id="tablet-form" class="actions">
-      <label class="number">원본 코드<input name="code" placeholder="예: AB3X92-X" maxlength="8" autocapitalize="characters" autocomplete="off" spellcheck="false" required></label>
+      <label class="number">원본 코드<input name="code" placeholder="예: 2-AB3X92-X" maxlength="10" autocapitalize="characters" autocomplete="off" spellcheck="false" required></label>
       <button class="primary" type="submit">원본 열기</button>
     </form>
     <p class="error" id="tablet-error" role="alert"></p>
@@ -109,76 +110,69 @@ main{padding:26px 0 48px}
   </section>
 </main>
 <script>const sourceData = (() => {
-  const original = {"X":[["공책","B7R3"],["색연필","K4M7"],["가위","D8S6"],["복사용지","T3P8"],["수정테이프","G5H2"],["종이컵","V6C9"],["포스트잇","F2W4"],["네임펜","M8Z5"],["지퍼백","R9D2"],["클립","S4V6"],["스티커","N3G8"],["물티슈","P7F5"]],"Y":[["수첩","H4V8"],["형광펜","C7R2"],["집게","K9G5"],["색종이팩","W6M3"],["네임스티커","P2D7"],["나무젓가락","Z4B6"],["메모카드","T8N2"],["보드펜","G3F9"],["고무줄","Y5S4"],["압정","D2K8"],["파일철","V7P3"],["휴지통","R6H5"]],"practice":[["연습용 봉투","H5N7"]]};
+  const original = {"X":["공책","색연필","가위","복사용지","수정테이프","종이컵","포스트잇","네임펜","지퍼백","클립","스티커","물티슈","볼펜","테이프","자","스테이플러"],"Y":["수첩","형광펜","집게","색종이팩","네임스티커","나무젓가락","메모카드","보드펜","고무줄","압정","파일철","휴지통","연필","봉투","풀","계산기"],"practice":[["연습용 봉투","H5N7Q3"]]};
+  const protocol = {"version":2,"generatorVersion":2,"targetOrderVersion":2,"allocationVersion":1,"rowCount":16,"targetCount":8,"repetitions":3,"durationSeconds":90,"assignments":[[["A","X"],["B","Y"]],[["B","X"],["A","Y"]],[["A","Y"],["B","X"]],[["B","Y"],["A","X"]]],"participantGroups":[2,3,0,2,2,3,1,1,0,2,0,1,2,0,0,3,3,1,3,1]};
   const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
   const digits = '23456789';
   const alphabet = digits + letters;
-  const legacySeed = 'LEGACY';
-  const version = 1;
-  const targetOrderVersion = 1;
-  const pairPattern = new RegExp('^([' + alphabet + ']{6})-?([XY])$');
-
+  const pairPattern = new RegExp('^2-([' + alphabet + ']{6})-([XY])$');
   function newSeed() {
     const bytes = new Uint8Array(6);
-    let seed;
-    do {
-      crypto.getRandomValues(bytes);
-      seed = Array.from(bytes, byte => alphabet[byte % alphabet.length]).join('');
-    } while (seed === legacySeed);
-    return seed;
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes, byte => alphabet[byte % alphabet.length]).join('');
   }
-
-  function parsePair(value) {
-    const match = String(value).trim().toUpperCase().match(pairPattern);
-    return match ? { seed: match[1], set: match[2] } : null;
-  }
-
-  function generator(seed) {
+  function generator(seed, scope) {
     let state = 2166136261;
-    for (const char of `v${version}:${seed}`) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
+    for (const char of 'v2:' + scope + ':' + seed) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
     if (!state) state = 1;
-    return () => {
-      state ^= state << 13;
-      state ^= state >>> 17;
-      state ^= state << 5;
-      return state >>> 0;
-    };
+    return () => { state ^= state << 13; state ^= state >>> 17; state ^= state << 5; return state >>> 0; };
   }
-
+  function integer(next, range) {
+    const limit = Math.floor(0x100000000 / range) * range;
+    let value;
+    do { value = next(); } while (value >= limit);
+    return value % range;
+  }
+  function shuffled(values, next) {
+    const result = [...values];
+    for (let index = result.length - 1; index > 0; index--) {
+      const other = integer(next, index + 1);
+      [result[index], result[other]] = [result[other], result[index]];
+    }
+    return result;
+  }
   function materialsFor(seed) {
-    if (seed === legacySeed) return original;
-    const next = generator(seed);
-    const pick = text => text[next() % text.length];
+    const next = generator(seed, 'codes');
     const used = new Set();
     const materials = { practice: original.practice };
     for (const set of ['X', 'Y']) {
-      materials[set] = original[set].map(([item]) => {
+      const names = shuffled(original[set], generator(seed, 'source-' + set));
+      materials[set] = names.map(item => {
         let code;
         do {
-          code = pick(letters) + pick(digits) + pick(letters) + pick(digits);
-        } while (used.has(code) || code[0] === code[2] || code[1] === code[3]);
+          code = Array.from({ length: 3 }, () => letters[integer(next, letters.length)] + digits[integer(next, digits.length)]).join('');
+        } while (used.has(code) || new Set([code[0], code[2], code[4]]).size !== 3 || new Set([code[1], code[3], code[5]]).size !== 3);
         used.add(code);
         return [item, code];
       });
     }
     return materials;
   }
-
-  function targetRowsFor(seed) {
-    const next = generator('target-order-v' + targetOrderVersion + ':' + seed);
-    const rows = Array.from({ length: 12 }, (_, index) => index + 1);
-    for (let index = rows.length - 1; index > 0; index--) {
-      const range = index + 1;
-      const limit = Math.floor(0x100000000 / range) * range;
-      let value;
-      do { value = next(); } while (value >= limit);
-      const other = value % range;
-      [rows[index], rows[other]] = [rows[other], rows[index]];
-    }
-    return rows.slice(0, 6);
+  function targetRowsFor(seed, repetition) {
+    const rows = Array.from({ length: protocol.rowCount }, (_, index) => index + 1);
+    return shuffled(rows, generator(seed, 'target-order-' + repetition)).slice(0, protocol.targetCount);
   }
-
-  return { newSeed, parsePair, materialsFor, targetRowsFor, targetOrderVersion, legacySeed, version, practice: original.practice };
+  function groupFor(participant) {
+    if (!/^A(0[1-9]|1[0-9]|20)$/.test(participant)) throw new Error('Invalid participant');
+    return protocol.participantGroups[Number(participant.slice(1)) - 1];
+  }
+  function pairCode(seed, set) { return '2-' + seed + '-' + set; }
+  function parsePair(value) {
+    const match = String(value).trim().toUpperCase().match(pairPattern);
+    return match ? { seed: match[1], set: match[2] } : null;
+  }
+  return { protocol, newSeed, groupFor, pairCode, parsePair, materialsFor, targetRowsFor,
+    version: protocol.generatorVersion, targetOrderVersion: protocol.targetOrderVersion, practice: original.practice };
 })();
 
 (() => {
@@ -193,7 +187,7 @@ main{padding:26px 0 48px}
   function openSource(value) {
     const pair = sourceData.parsePair(value);
     if (!pair) {
-      error.textContent = '노트북에 표시된 여섯 글자와 X 또는 Y를 확인해 주세요.';
+      error.textContent = '노트북의 원본 코드를 2-로 시작하는 부분부터 그대로 입력해 주세요.';
       return;
     }
     const code = pair.seed + '-' + pair.set;
