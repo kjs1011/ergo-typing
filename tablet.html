@@ -115,6 +115,7 @@ main{padding:26px 0 48px}
   const alphabet = digits + letters;
   const legacySeed = 'LEGACY';
   const version = 1;
+  const targetOrderVersion = 1;
   const pairPattern = new RegExp('^([' + alphabet + ']{6})-?([XY])$');
 
   function newSeed() {
@@ -163,7 +164,21 @@ main{padding:26px 0 48px}
     return materials;
   }
 
-  return { newSeed, parsePair, materialsFor, legacySeed, version, practice: original.practice };
+  function targetRowsFor(seed) {
+    const next = generator('target-order-v' + targetOrderVersion + ':' + seed);
+    const rows = Array.from({ length: 12 }, (_, index) => index + 1);
+    for (let index = rows.length - 1; index > 0; index--) {
+      const range = index + 1;
+      const limit = Math.floor(0x100000000 / range) * range;
+      let value;
+      do { value = next(); } while (value >= limit);
+      const other = value % range;
+      [rows[index], rows[other]] = [rows[other], rows[index]];
+    }
+    return rows.slice(0, 6);
+  }
+
+  return { newSeed, parsePair, materialsFor, targetRowsFor, targetOrderVersion, legacySeed, version, practice: original.practice };
 })();
 
 (() => {

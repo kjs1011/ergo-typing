@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="태블릿과 노트북에서 원본을 읽고 코드를 입력하는 인간공학실험">
 <meta name="theme-color" content="#f4f7f9">
+<meta name="experiment-version" content="2026-11-19-randomized-v1">
 <title>자료 입력 자세 실험</title>
 <style>*{box-sizing:border-box}
 :root{color-scheme:light;font-family:Inter,"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;color:#18293a;background:#f4f7f9;line-height:1.55;font-synthesis:none}
@@ -105,6 +106,7 @@ main{padding:26px 0 48px}
   const alphabet = digits + letters;
   const legacySeed = 'LEGACY';
   const version = 1;
+  const targetOrderVersion = 1;
   const pairPattern = new RegExp('^([' + alphabet + ']{6})-?([XY])$');
 
   function newSeed() {
@@ -153,13 +155,26 @@ main{padding:26px 0 48px}
     return materials;
   }
 
-  return { newSeed, parsePair, materialsFor, legacySeed, version, practice: original.practice };
+  function targetRowsFor(seed) {
+    const next = generator('target-order-v' + targetOrderVersion + ':' + seed);
+    const rows = Array.from({ length: 12 }, (_, index) => index + 1);
+    for (let index = rows.length - 1; index > 0; index--) {
+      const range = index + 1;
+      const limit = Math.floor(0x100000000 / range) * range;
+      let value;
+      do { value = next(); } while (value >= limit);
+      const other = value % range;
+      [rows[index], rows[other]] = [rows[other], rows[index]];
+    }
+    return rows.slice(0, 6);
+  }
+
+  return { newSeed, parsePair, materialsFor, targetRowsFor, targetOrderVersion, legacySeed, version, practice: original.practice };
 })();
 
 (() => {
   'use strict';
 
-  const targetRows = [8, 2, 10, 5, 12, 4];
   const assignments = [
     [['A', 'X'], ['B', 'Y']],
     [['B', 'X'], ['A', 'Y']],
@@ -177,6 +192,7 @@ main{padding:26px 0 48px}
     ['frustration', '좌절감', '매우 낮음', '매우 높음'],
   ];
   const duration = 90_000;
+  const submissionUrl = 'https://script.google.com/macros/s/AKfycbynQkyhiSwBItlhk-QFziBVu7udkPWaZRdDWhXNzJWZ02e4hnA9Jq782aWzwKPsJ_v9/exec';
   const testMode = new URLSearchParams(location.search).get('test') === '1';
   const app = document.getElementById('app');
   let ticker;
@@ -197,16 +213,19 @@ main{padding:26px 0 48px}
     return String(value).trim().toUpperCase();
   }
 
-  function groupFor(participant) {
-    return (participant - 1) % assignments.length;
-  }
-
   function createSession(participant) {
-    const group = groupFor(participant);
+    const group = (Number(participant.slice(1)) - 1) % assignments.length;
+    const seed = sourceData.newSeed();
+    const targetRows = sourceData.targetRowsFor(seed);
     return {
-      participant, group, index: 0, stage: 'practice', downloaded: false, seed: sourceData.newSeed(),
+      participant,
+      submissionId: crypto.randomUUID(),
+      group,
+      index: 0,
+      stage: 'practice',
+      seed,
       records: assignments[group].map(([condition, set]) => ({
-        condition, set, answers: Array(6).fill(''),
+        condition, set, targetRows: [...targetRows], answers: Array(6).fill(''),
       })),
     };
   }
@@ -216,7 +235,7 @@ main{padding:26px 0 48px}
   }
 
   function targets(record) {
-    return targetRows.map(row => materials[record.set][row - 1]);
+    return record.targetRows.map(row => materials[record.set][row - 1]);
   }
 
   function score(record) {
@@ -228,11 +247,6 @@ main{padding:26px 0 48px}
       else counts.wrong += 1;
     });
     return counts;
-  }
-
-  function tlxMean(record) {
-    if (scales.some(([key]) => !Number.isFinite(record[key]))) return null;
-    return scales.reduce((total, [key]) => total + record[key], 0) / scales.length;
   }
 
   function testButton(label) {
@@ -281,16 +295,17 @@ main{padding:26px 0 48px}
   function showIntro() {
     app.innerHTML = '<div class="intro"><section class="card start"><h1 tabindex="-1">원본을 보고<br>코드를 입력해 주세요</h1>' +
       '<p class="lead">태블릿 원본과 노트북 원본으로 한 번씩 진행합니다. 준비와 설문까지 약 8분 30초가 걸립니다.</p>' +
-      '<form id="entry" autocomplete="off"><label class="number">배정받은 참가자 번호<input name="participant" type="number" min="1" max="16" inputmode="numeric" placeholder="예: 3"' + (testMode ? ' value="1"' : '') + ' required><small>이름 대신 1~16 사이의 번호를 입력해 주세요.</small></label>' +
+      '<form id="entry" autocomplete="off"><label class="number">배정받은 참가자 번호<input name="participant" type="text" pattern="[Aa](0[1-9]|1[0-9]|20)" maxlength="3" autocapitalize="characters" spellcheck="false" placeholder="예: A01"' + (testMode ? ' value="A01"' : '') + ' required><small>A01부터 A20까지 배정받은 번호를 입력해 주세요.</small></label>' +
       '<div class="actions"><button class="primary" type="submit">연습 시작</button></div></form></section>' +
       '<section class="card steps"><h2>시작 전 확인</h2><ol><li>노트북을 몸 앞에 두고, 태블릿은 책상 왼쪽에 평평하게 놓아 주세요.</li>' +
-      '<li>원본에서 품목을 찾고 코드를 입력합니다. 제출하기 전에 원본과 대조해 주세요.</li><li>두 조건을 마치면 결과 CSV를 저장해 주세요.</li></ol>' +
-      '<div class="actions"><a href="./tablet.html" target="_blank" rel="noopener" class="secondary">태블릿 원본 페이지</a></div></section></div>';
+      '<li>원본에서 품목을 찾고 코드를 입력합니다. 제출하기 전에 원본과 대조해 주세요.</li>' +
+      '<li><strong>실험을 끝내기 전에는 응답이 저장되지 않아요.</strong> 새로고침하거나 창을 닫으면 지금까지의 입력이 사라져요.</li>' +
+      '<li>두 조건을 모두 마치면 결과를 한 번에 전송해요. 전송 완료 메시지가 뜰 때까지 기다려 주세요.</li></ol></section></div>';
     document.getElementById('entry').addEventListener('submit', event => {
       event.preventDefault();
       const form = event.currentTarget;
       if (!form.reportValidity()) return;
-      session = createSession(Number(new FormData(form).get('participant')));
+      session = createSession(normalize(new FormData(form).get('participant')));
       materials = sourceData.materialsFor(session.seed);
       render();
     });
@@ -324,43 +339,20 @@ main{padding:26px 0 48px}
     const record = current();
     const tablet = record.condition === 'A';
     const code = session.seed + '-' + record.set;
-    const link = new URL('./tablet.html', location.href);
-    link.searchParams.set('code', code);
     const instructions = tablet
-      ? '<p class="setup-note">태블릿 원본 페이지에서 아래 코드를 입력하거나, 복사한 링크를 태블릿에서 열어 주세요. 품목 12개가 한 화면에 보이면 시작해 주세요.</p>' +
-        '<p><span class="access-code" aria-label="원본 코드 ' + code + '">' + code + '</span></p>' +
-        '<div class="actions"><a class="secondary" target="_blank" rel="noopener" href="' + escapeHtml(link.href) +
-        '">태블릿 원본 ' + record.set + ' 열기</a><button type="button" class="secondary" id="copy">태블릿 링크 복사</button></div>' +
-        '<p class="status" id="copy-status" aria-live="polite"></p>'
+      ? '<p class="setup-note">태블릿 원본 페이지에 아래 코드를 입력해 주세요. 품목 12개가 보이면 시작해 주세요.</p>' +
+        '<p><span class="access-code" aria-label="원본 코드 ' + code + '">' + code + '</span></p>'
       : '<p class="setup-note">노트북 왼쪽 원본에 품목 12개가 보이는지 확인하고, 태블릿 화면을 꺼 주세요.</p>';
     app.innerHTML = head(conditionNames[record.condition], (session.index + 1) + ' / 2번째 조건 준비') +
       '<div class="board">' + sourcePanel('원본 ' + record.set, tablet ? null : materials[record.set]) +
       '<form class="work" id="prepare"><h2>시작 전 준비</h2>' + instructions +
-      neckSelect('neckBefore', '지금 목이 얼마나 불편한가요?') +
       '<p class="setup-note">여섯 개 코드를 가능한 한 정확하고 빠르게 입력하고, 제출 전 원본과 대조해 주세요.</p>' +
-      '<div class="actions"><button class="primary" type="submit">입력 시작</button>' + testButton('준비 건너뛰기') + '</div></form></div>';
-    if (tablet) document.getElementById('copy').addEventListener('click', async () => {
-      const status = document.getElementById('copy-status');
-      try {
-        if (location.protocol === 'file:') throw new Error('local file');
-        await navigator.clipboard.writeText(link.href);
-        status.textContent = '원본 링크를 복사했어요. 태블릿에서 열어 주세요.';
-      } catch {
-        status.textContent = '태블릿에서 tablet.html을 열고 위 원본 코드를 입력해 주세요.';
-      }
-    });
-    const start = neckBefore => {
-      record.neckBefore = neckBefore;
-      session.stage = 'typing';
-      render();
-    };
+      '<div class="actions"><button class="primary" type="submit">입력 시작</button></div></form></div>';
     document.getElementById('prepare').addEventListener('submit', event => {
       event.preventDefault();
-      const form = event.currentTarget;
-      if (!form.reportValidity()) return;
-      start(Number(new FormData(form).get('neckBefore')));
+      session.stage = 'typing';
+      render();
     });
-    onSkip(() => start(null));
   }
 
   function showTyping() {
@@ -427,13 +419,17 @@ main{padding:26px 0 48px}
       '<fieldset><legend>원본을 읽을 때 주로 취한 고개 자세는 무엇이었나요?</legend><div class="choices">' +
       views + '</div></fieldset><fieldset><legend>작업부하 6문항</legend><div class="scores">' + scoreControls() +
       '</div></fieldset><div class="actions"><button class="primary" type="submit">' +
-      (session.index === 0 ? '다음 조건 준비' : '실험 마치기') + '</button>' + testButton('설문 건너뛰기') + '</div></form></section>';
+      (session.index === 0 ? '다음 조건 준비' : testMode ? '실험 마치기' : '실험 마치고 전송') + '</button>' + testButton('설문 건너뛰기') + '</div></form></section>';
     const advance = () => {
       if (session.index === 0) {
         session.index = 1;
         session.stage = 'prepare';
-      } else session.stage = 'done';
-      render();
+        render();
+        return;
+      }
+      session.stage = 'done';
+      if (testMode) render();
+      else void sendResults();
     };
     document.getElementById('survey').addEventListener('submit', event => {
       event.preventDefault();
@@ -445,55 +441,61 @@ main{padding:26px 0 48px}
       for (const [id] of scales) record[id] = Number(answers.get(id));
       advance();
     });
-    onSkip(() => {
-      record.skippedSurvey = true;
-      advance();
-    });
+    onSkip(advance);
   }
 
-  function csvCell(value) {
-    let text = String(value ?? '');
-    if (typeof value === 'string' && (/^\s*[=+\-@]/.test(text) || /^[\t\r\n]/.test(text))) text = "'" + text;
-    return '"' + text.replaceAll('"', '""') + '"';
-  }
+  async function sendResults() {
+    const run = session;
+    run.sendState = submissionUrl ? 'sending' : 'unavailable';
+    render();
+    if (!submissionUrl) return;
 
-  function downloadResults() {
-    const header = [
-      'participant', 'assignment', 'trial', 'condition', 'source_set', 'elapsed_seconds', 'timed_out',
-      'correct', 'wrong', 'blank', 'posture', 'neck_before', 'neck_after', 'neck_change',
-      ...scales.map(([id]) => id), 'rtlx',
-      'seed', 'generator_version', 'test_mode', 'skipped_input', 'skipped_survey',
-    ];
-    for (let i = 1; i <= 6; i++) header.push('item_' + i, 'response_' + i, 'answer_' + i);
-    const rows = session.records.map((record, index) => {
-      const counts = score(record);
-      const fields = [
-        session.participant, session.group + 1, index + 1, record.condition, record.set,
-        record.elapsed.toFixed(1), record.timedOut ? 1 : 0, counts.correct, counts.wrong, counts.blank,
-        postureChoices[record.posture], record.neckBefore, record.neckAfter,
-        Number.isFinite(record.neckBefore) && Number.isFinite(record.neckAfter) ? record.neckAfter - record.neckBefore : null,
-        ...scales.map(([id]) => record[id]), tlxMean(record)?.toFixed(2),
-        session.seed, sourceData.version,
-        testMode ? 1 : 0, record.skippedInput ? 1 : 0, record.skippedSurvey ? 1 : 0,
-      ];
-      targets(record).forEach(([name, expected], i) => fields.push(name, record.answers[i], expected));
-      return fields;
-    });
-    const csv = '\uFEFF' + [header, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = (testMode ? '테스트_' : '') + '주제6_참가자' + String(session.participant).padStart(2, '0') + '.csv';
-    document.body.append(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-    session.downloaded = true;
-    document.getElementById('reset').disabled = false;
-    document.getElementById('saved').textContent = 'CSV를 저장했어요. 조에서 안내한 방법으로 파일을 보내 주세요.';
+    const payload = {
+      submissionId: run.submissionId,
+      participant: run.participant,
+      seed: run.seed,
+      generatorVersion: sourceData.version,
+      targetOrderVersion: sourceData.targetOrderVersion,
+      trials: run.records.map(record => ({
+        condition: record.condition,
+        set: record.set,
+        targetRows: record.targetRows,
+        elapsed: record.elapsed,
+        timedOut: record.timedOut,
+        posture: record.posture,
+        neckAfter: record.neckAfter,
+        workload: scales.map(([id]) => record[id]),
+        items: targets(record).map(([name, expected], index) => ({
+          name, expected, response: record.answers[index],
+        })),
+      })),
+    };
+    try {
+      const response = await fetch(submissionUrl, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        credentials: 'omit',
+        signal: AbortSignal.timeout(25_000),
+      });
+      if (!response.ok) throw new Error('Submission failed');
+      const receipt = await response.json();
+      if (receipt.ok && receipt.submissionId === run.submissionId) run.sendState = 'sent';
+      else if (receipt.error === 'duplicate_participant') run.sendState = 'duplicate';
+      else run.sendState = 'retry';
+    } catch {
+      run.sendState = 'retry';
+    }
+    if (run === session) render();
   }
 
   function showDone() {
+    const messages = {
+      sending: '두 조건의 결과를 전송하고 있어요. 이 창을 열어 두세요.',
+      sent: '결과를 전송했어요. 이제 창을 닫아도 돼요.',
+      retry: '전송 완료를 확인하지 못했어요. 창을 닫지 말고 다시 전송해 주세요.',
+      duplicate: '이미 제출된 참가자 번호예요. 실험 진행자에게 알려 주세요.',
+      unavailable: '결과를 보낼 수 없어요. 이 창을 열어 둔 채 실험 진행자에게 알려 주세요.',
+    };
     const rows = session.records.map(record => {
       const counts = score(record);
       return '<tr><th scope="row">' + conditionNames[record.condition] + '</th><td>' +
@@ -501,15 +503,14 @@ main{padding:26px 0 48px}
         '</td><td>' + counts.correct + ' / 6</td><td>' + counts.wrong + '</td><td>' + counts.blank + '</td></tr>';
     }).join('');
     app.innerHTML = '<section class="card done">' + head('실험을 마쳤어요', '참가자 ' + session.participant) +
-      '<p class="lead">아래 버튼으로 두 조건의 결과를 CSV 한 파일에 저장해 주세요.</p>' +
+      '<p class="lead" role="status">' + (testMode ? '테스트를 마쳤어요. 테스트 응답은 전송하지 않아요.' : messages[session.sendState]) + '</p>' +
       '<table class="result"><thead><tr><th>조건</th><th>시간</th><th>정답</th><th>오답</th><th>빈칸</th></tr></thead><tbody>' + rows +
-      '</tbody></table><div class="actions"><button class="primary" id="download" type="button">결과 CSV 저장</button>' +
-      '<button class="secondary" id="reset" type="button"' + (session.downloaded ? '' : ' disabled') +
-      '>새 참가자 시작</button></div><p class="status" id="saved" aria-live="polite"></p></section>';
-    document.getElementById('download').addEventListener('click', downloadResults);
-    document.getElementById('reset').addEventListener('click', () => {
-      if (session.downloaded) resetRun();
-    });
+      '</tbody></table><div class="actions">' +
+      (session.sendState === 'retry' ? '<button class="primary" id="retry" type="button">다시 전송</button>' : '') +
+      (testMode || session.sendState === 'sent' ? '<button class="secondary" id="reset" type="button">새 참가자 시작</button>' : '') +
+      '</div></section>';
+    document.getElementById('retry')?.addEventListener('click', sendResults);
+    document.getElementById('reset')?.addEventListener('click', resetRun);
   }
 
   function resetRun() {
