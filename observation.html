@@ -138,6 +138,26 @@ summary{cursor:pointer;font-weight:750}
 .measure-summary{padding:12px 15px;background:#eaf4fc;border-radius:8px;color:#185485;font-size:.95rem;font-variant-numeric:tabular-nums}
 .measure-finish p+p{margin-top:10px}
 #submit-status{margin-top:10px;color:#185485}
+.scan-section,.rula-section{margin:26px 0;padding-top:20px;border-top:1px solid #dce6ed}
+.scan-section h3,.rula-section h3,.supplement-heading{font-size:1.1rem;margin:0 0 10px;color:#185485}
+.scan-section p+p,.rula-section p+p{margin-top:8px}
+.table-scroll{overflow-x:auto;margin:14px 0}
+.scan-table{width:100%;border-collapse:collapse;min-width:530px}
+.scan-table th,.scan-table td{text-align:left;padding:9px 10px;border-bottom:1px solid #dce6ed}
+.scan-table th{font-size:.95rem;background:#f2f7fb}
+.scan-table select{font:inherit;width:100%;min-height:42px;padding:6px;border:1px solid #9fb3c2;border-radius:6px;background:white;color:#18293a}
+.rula-stage{min-width:0;border:1px solid #c6d8e5;border-radius:10px;margin:18px 0;padding:15px 18px}
+.rula-stage legend{font-size:1rem}
+.representative-label{background:#eaf4fc;padding:11px 13px;border-radius:8px;font-weight:650;color:#234d6c}
+.rula-action{font-size:.95rem;color:#185485;margin-top:12px}
+.plan-link{margin:12px 0}
+.study-plan{max-width:970px;margin-inline:auto}
+.study-plan .card{margin:20px 0}
+.study-plan h2{font-size:1.25rem;margin-bottom:12px}
+.study-plan p+p{margin-top:12px}
+.study-plan li+li{margin-top:9px}
+.study-plan .verdict{border-top:5px solid #185485}
+.study-plan .result{min-width:600px}
 @media(max-width:760px){.capture-layout{grid-template-columns:1fr}.sample-grid{grid-template-columns:1fr}.measure-grid{grid-template-columns:1fr;gap:0}.measure-condition{padding:14px 13px}.capture-overview,.measurement-help{padding:14px}.capture-figure{max-width:580px;margin-inline:auto}.phase{white-space:normal}.capture-steps{gap:15px}}
 @media(max-height:760px){.tablet-shell{padding:10px 0}.tablet-source table{font-size:.9rem}.tablet-source th,.tablet-source td{padding:2px 12px}.tablet-source .stephead h1{font-size:1.3rem}.tablet-source button{min-height:36px;margin-top:8px}}
 @media(max-width:690px){.shell{width:calc(100% - 22px)}.intro{grid-template-columns:1fr;padding-top:0;gap:12px}.start,.steps,.card{padding:17px}.source,.work{padding:10px 8px}.source th,.source td{padding:5px 4px;overflow-wrap:anywhere}.field-row{grid-template-columns:1fr;gap:1px}.field-row input{height:30px}.scores{grid-template-columns:1fr}.phase{font-size:.72rem}.course{font-size:.7rem}.stephead{gap:5px}.result th,.result td{padding:5px;font-size:.8rem}}
@@ -235,13 +255,41 @@ summary{cursor:pointer;font-weight:750}
 
 const observationModel = (() => {
   'use strict';
-  const version = 1;
+  const version = 2;
   const fractions = [0.25, 0.5, 0.75];
   const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/;
   const participant = /^A(0[1-9]|1[0-9]|20)$/;
   const angle = value => Number.isFinite(value) && value >= -90 && value <= 90;
   const text = value => typeof value === 'string' && value.length <= 400;
   const sampleTimes = seconds => fractions.map(fraction => Math.round(seconds * fraction * 10) / 10);
+  const scanTimes = seconds => Array.from({ length: 9 }, (_, index) => Math.round(seconds * (index + 1)) / 10);
+  const phases = ['typing', 'non_typing'];
+  const scanPhases = [...phases, 'mixed', 'unclear'];
+  const postures = ['straight', 'flexed', 'rotated', 'flexed_rotated', 'unclear'];
+  const integer = (value, low, high) => Number.isInteger(value) && value >= low && value <= high;
+  function representative(scan, phase) {
+    const candidates = scan.map((item, index) => ({ ...item, index })).filter(item => item.phase === phase && postures.includes(item.posture) && item.posture !== 'unclear');
+    if (!candidates.length) return null;
+    const counts = {};
+    candidates.forEach(item => { counts[item.posture] = (counts[item.posture] || 0) + 1; });
+    const maximum = Math.max(...Object.values(counts));
+    return candidates.find(item => counts[item.posture] === maximum);
+  }
+  function actionLevel(score) {
+    return !integer(score, 1, 7) ? null : score <= 2 ? 1 : score <= 4 ? 2 : score <= 6 ? 3 : 4;
+  }
+  function validAssessments(condition) {
+    if (!Array.isArray(condition.assessments) || condition.assessments.length !== 2) return false;
+    return condition.assessments.every((assessment, index) => {
+      if (!assessment || assessment.phase !== phases[index] || !['assessed', 'unassessable'].includes(assessment.status) || !text(assessment.note)) return false;
+      if (assessment.status === 'unassessable') return assessment.frameIndex === null && assessment.score === null &&
+        assessment.neck === null && assessment.trunk === null && assessment.wrist === null && assessment.recheck === null && assessment.note.trim() !== '' && assessment.worksheetChecked === false;
+      const frame = representative(condition.scan, assessment.phase);
+      return frame !== null && assessment.frameIndex === frame.index && integer(assessment.score, 1, 7) &&
+        integer(assessment.neck, 1, 6) && integer(assessment.trunk, 1, 6) && integer(assessment.wrist, 1, 4) &&
+        (assessment.recheck === null || integer(assessment.recheck, 1, 7)) && assessment.worksheetChecked === true;
+    });
+  }
   function validate(record) {
     if (!record || record.kind !== 'posture_observation' || record.observationVersion !== version ||
         !uuid.test(record.submissionId) || !uuid.test(record.observationId) || !participant.test(record.participant) ||
@@ -249,7 +297,13 @@ const observationModel = (() => {
         !['measured', 'unavailable'].includes(record.baseline.status) || !text(record.baseline.note) ||
         (record.baseline.status === 'measured' ? !angle(record.baseline.angle) : record.baseline.angle !== null) ||
         (record.baseline.status === 'unavailable' && !record.baseline.note.trim()) ||
-        !Array.isArray(record.conditions) || record.conditions.length !== 2) return false;
+        !Array.isArray(record.conditions) || record.conditions.length !== 2 || !text(record.assessorCode) || !text(record.recheckAssessorCode) ||
+        !['left', 'right', ''].includes(record.ratedSide) || record.countRule !== 'visual_flexion_bout_v2') return false;
+    if (!record.conditions.every(condition => condition && typeof condition === 'object' && Array.isArray(condition.assessments))) return false;
+    const scored = record.conditions.some(condition => condition.assessments.some(assessment => assessment?.status === 'assessed'));
+    const rechecked = record.conditions.some(condition => condition.assessments.some(assessment => assessment && assessment.recheck !== null));
+    if (scored && (!record.assessorCode.trim() || !record.ratedSide)) return false;
+    if (rechecked && (!record.recheckAssessorCode.trim() || record.recheckAssessorCode.trim() === record.assessorCode.trim())) return false;
     return record.conditions.every((condition, index) => {
       if (!condition || condition.condition !== ['A', 'B'][index] || condition.repetition !== 2 ||
           !Number.isFinite(condition.elapsed) || condition.elapsed <= 0 || condition.elapsed > 90 ||
@@ -259,51 +313,170 @@ const observationModel = (() => {
       if (!condition.samples.every((sample, sampleIndex) => sample && sample.time === times[sampleIndex] &&
           typeof sample.unreadable === 'boolean' && (sample.unreadable ? sample.angle === null : angle(sample.angle)))) return false;
       if (condition.status === 'missing' && condition.samples.some(sample => !sample.unreadable)) return false;
-      if (condition.status === 'full') {
-        return record.baseline.status === 'measured' && condition.samples.every(sample => !sample.unreadable) &&
+      const scans = scanTimes(condition.elapsed);
+      if (!Array.isArray(condition.scan) || condition.scan.length !== 9 || !condition.scan.every((item, scanIndex) => item && item.time === scans[scanIndex] &&
+          scanPhases.includes(item.phase) && postures.includes(item.posture))) return false;
+      if (condition.status === 'missing' && condition.scan.some(item => item.phase !== 'unclear' || item.posture !== 'unclear')) return false;
+      if (!validAssessments(condition) || !['available', 'unavailable'].includes(condition.countStatus)) return false;
+      if (condition.status === 'missing' && condition.assessments.some(assessment => assessment.status === 'assessed')) return false;
+      if (condition.countStatus === 'available') {
+        return condition.status === 'full' &&
           Number.isInteger(condition.episodes) && condition.episodes >= 0 && condition.episodes <= 500 &&
           Number.isFinite(condition.flexionSeconds) && condition.flexionSeconds >= 0 && condition.flexionSeconds <= condition.elapsed &&
           (condition.episodes === 0 ? condition.flexionSeconds === 0 : condition.flexionSeconds >= condition.episodes) &&
           ['yes', 'no'].includes(condition.startedFlexed) && !(condition.startedFlexed === 'yes' && condition.episodes === 0);
       }
-      return condition.episodes === null && condition.flexionSeconds === null && condition.startedFlexed === null;
+      return condition.episodes === null && condition.flexionSeconds === null && condition.startedFlexed === null && condition.note.trim() !== '';
     });
   }
   function summary(baseline, condition) {
-    const changes = baseline.status === 'measured' && Number.isFinite(baseline.angle)
-      ? condition.samples.filter(sample => !sample.unreadable && Number.isFinite(sample.angle)).map(sample => Math.round((baseline.angle - sample.angle) * 10) / 10) : [];
+    const changesBySample = condition.samples.map(sample => baseline.status === 'measured' && Number.isFinite(baseline.angle) && !sample.unreadable && Number.isFinite(sample.angle)
+      ? Math.round((baseline.angle - sample.angle) * 10) / 10 : null);
+    const changes = changesBySample.filter(value => value !== null);
     const sorted = [...changes].sort((a, b) => a - b);
     const middle = Math.floor(sorted.length / 2);
     const median = !sorted.length ? null : sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
-    return { changes, median, sampleCount: changes.length,
+    const validScans = (condition.scan || []).filter(item => postures.includes(item.posture) && item.posture !== 'unclear');
+    return { changes, changesBySample, median, sampleCount: changes.length,
       above20Percent: changes.length ? 100 * changes.filter(value => value >= 20).length / changes.length : null,
-      episodesPerMinute: condition.status === 'full' ? condition.episodes / condition.elapsed * 60 : null,
-      flexionPercent: condition.status === 'full' ? condition.flexionSeconds / condition.elapsed * 100 : null };
+      scanCount: validScans.length,
+      flexedScanPercent: validScans.length ? 100 * validScans.filter(item => ['flexed', 'flexed_rotated'].includes(item.posture)).length / validScans.length : null,
+      rotatedScanPercent: validScans.length ? 100 * validScans.filter(item => ['rotated', 'flexed_rotated'].includes(item.posture)).length / validScans.length : null,
+      episodesPerMinute: condition.countStatus === 'available' && Number.isInteger(condition.episodes) ? condition.episodes / condition.elapsed * 60 : null,
+      flexionPercent: condition.countStatus === 'available' && Number.isFinite(condition.flexionSeconds) ? condition.flexionSeconds / condition.elapsed * 100 : null };
   }
-  return { version, sampleTimes, validate, summary };
+  return { version, sampleTimes, scanTimes, phases, scanPhases, postures, representative, actionLevel, validate, summary };
 })();
 
 const captureGuide = (() => {
   'use strict';
   function image() {
-    return '<figure class="capture-figure"><img src="./assets/posture-guide.png" alt="정면을 보는 기준 자세와 아래를 보는 작업 자세를 표현한 인체 모형. 눈 바깥쪽과 귀 앞쪽의 측정 기준점을 표시했습니다." width="1536" height="1024"><figcaption>촬영 자세를 설명하는 AI 생성 모형입니다. 기기 배치는 화면 지시를 따르세요. 표시된 점은 눈 바깥쪽 끝과 귀 앞쪽 돌기(이주)입니다.</figcaption></figure>';
+    return '<figure class="capture-figure"><img src="./assets/posture-guide.png" alt="정면을 보는 기준 자세와 아래를 보는 작업 자세를 표현한 안내용 인체 모형. 눈 바깥쪽과 귀 앞쪽의 기준점을 표시했습니다." width="1536" height="1024"><figcaption>AI 생성 안내 모형입니다. 실제 평가 사진이 아닙니다. 영상은 머리부터 손목·발까지 보이게 촬영하고, 태블릿은 실험 지시대로 노트북 왼쪽에 놓으세요.</figcaption></figure>';
   }
   function steps() {
-    return '<ol class="capture-steps"><li><strong>시작 전 · 기준 사진 1장</strong><p>휴대폰을 몸 옆에 고정합니다. 귀와 눈 바깥쪽 끝, 목과 어깨가 보이게 맞춥니다. 눈높이의 정면 표적을 편하게 보는 모습을 사진 1장 또는 영상 3~5초로 남깁니다. 기기 배치를 바꾸지 말고, 사진의 각도는 모든 작업이 끝난 뒤 측정합니다.</p></li>' +
-      '<li><strong>작업 중 · A·B 각각 두 번째 시행 촬영</strong><p>각 배치의 두 번째 입력 직전에 녹화를 시작하세요. 참가 번호와 화면의 조건 이름을 소리 내어 남기고 시작합니다. 시작 안내음 1번부터 종료 안내음 2번까지가 분석 구간입니다. 촬영 때문에 평소 자세를 바꾸지 마세요. 입력이 끝나면 녹화를 멈추고 이어서 실험합니다.</p></li>' +
-      '<li><strong>실험 후 · 사진·영상을 보며 빈칸 입력</strong><p>기준 사진의 각도와 각 작업 영상의 세 시점 각도를 잽니다. 영상 전체를 다시 보면서 숙임 구간 수와 합계 시간을 기록합니다. 측정할 수 없는 값은 추측하지 말고 판독 불가로 표시합니다.</p></li></ol>';
+    return '<ol class="capture-steps"><li><strong>시작 전 · 기준 모습과 촬영 범위 확인</strong><p>휴대폰을 몸 옆에 고정해 눈·귀·목·몸통과 팔·손목, 의자와 발 지지가 보이게 맞춥니다. 눈높이의 정면 표적을 편하게 보는 사진 1장 또는 3~5초 영상을 남깁니다. 실험 도중 자세를 바르게 고치라는 지시는 하지 않습니다.</p></li>' +
+      '<li><strong>작업 중 · A·B 각각 두 번째 시행 촬영</strong><p>두 번째 입력 직전에 녹화를 시작하고 참가 번호·조건을 소리 내어 남깁니다. 시작 안내음 1번부터 종료 안내음 2번까지를 분석합니다. 카메라·의자·기기 위치는 두 조건에서 유지합니다. 촬영 파일은 직접 보관하세요.</p></li>' +
+      '<li><strong>가능하면 · 같은 시각의 전면 보조 영상</strong><p>노트북 전면 카메라나 별도 기기로 동시에 촬영하면 고개 돌림, 어깨·팔의 좌우 상태를 보완할 수 있습니다. 두 영상에 같은 시작·종료 안내음이 들리게 하세요. 전면 영상만 보고 앞뒤 숙임 각도나 좌우 회전각을 정확한 도수로 입력하지 않습니다.</p></li>' +
+      '<li><strong>실험 후 · 고정 시점 관찰과 RULA 기록</strong><p>사이트가 표시하는 아홉 시점의 행동·머리 자세를 기록합니다. 행동별 선정 장면을 수업 17쪽의 RULA 평가표로 평가하고 값을 입력합니다. 이어서 측면 각도와 영상 전체의 숙임 구간을 보조 지표로 기록합니다. 보이지 않는 항목은 추측하지 않습니다.</p></li></ol>';
   }
   function measurement() {
-    return '<details class="measurement-help"><summary>각도·횟수·시간을 측정하는 방법</summary><div class="help-body"><h3>각도: 귀에서 눈으로 향하는 선과 수평선</h3>' +
-      '<svg class="angle-diagram" viewBox="0 0 600 170" role="img" aria-label="수평선보다 눈이 위에 있으면 양수, 아래에 있으면 음수로 입력하는 각도 기준"><g fill="none" stroke-width="3"><path d="M45 80h200M345 80h200" stroke="#a2b5c3" stroke-dasharray="5 5"/><path d="M70 80l125-35M370 80l125 48" stroke="#185485"/></g><g fill="#e68537"><circle cx="70" cy="80" r="6"/><circle cx="370" cy="80" r="6"/></g><g fill="#209b98"><circle cx="195" cy="45" r="6"/><circle cx="495" cy="128" r="6"/></g><g fill="#18293a" font-size="17"><text x="58" y="110">귀</text><text x="193" y="33">눈</text><text x="65" y="150">눈이 수평선 위: +각도</text><text x="358" y="110">귀</text><text x="510" y="135">눈</text><text x="355" y="160">눈이 수평선 아래: −각도</text></g></svg>' +
-      '<p>Kinovea 등에서 수평선을 기준으로 귀의 이주에서 같은 쪽 눈 바깥쪽 끝으로 선을 그어 각도를 잽니다. 위쪽은 양수, 아래쪽은 음수로 입력하세요. 기준 사진과 작업 영상에서 같은 점·부호를 사용합니다. 사이트가 <strong>기준 각도 − 작업 각도</strong>로 머리 숙임각 변화를 계산합니다. 몸통 움직임도 영향을 주므로 목 관절만의 굽힘각으로 해석하지 않습니다.</p>' +
-      '<h3>세 시점: 두 번째 시행의 25%·50%·75%</h3><p>각 조건 두 번째 시행의 실제 입력시간을 기준으로 세 시점이 자동 표시됩니다. 시작 안내음부터 표시된 초만큼 지난 장면을 측정하세요. 마음에 드는 장면으로 바꾸지 않습니다. 세 장면의 비율은 표본 비율이며 정확한 시간 비율과 다릅니다.</p>' +
-      '<h3>횟수: 숙이기 시작해서 돌아올 때까지 1구간</h3><p>기준보다 20° 이상 아래로 기울어진 상태가 1초 이상이면 숙임 구간이 시작됩니다. 숙임각 변화가 10° 미만으로 1초 이상 돌아오면 종료합니다. 같은 자세를 유지하는 동안에는 여러 번 세지 않습니다. 경계 장면은 멈춰 각도를 확인하세요. 영상 시작부터 이미 숙인 상태가 1초 이상이면 1구간으로 세고, 아래 항목에서 시작 시 숙임을 표시합니다. 영상 끝까지 이어진 구간은 끝 안내음까지 기록합니다.</p>' +
-      '<p>각 구간의 시작부터 종료까지 초를 더해 <strong>숙임 구간 합계 시간</strong>에 입력합니다. 구간 안에서 10~20° 사이로 움직인 시간도 포함됩니다. 이 값은 “20° 이상으로만 유지한 시간”과 다릅니다. 20°·10°·1초는 본 실험의 집계 규칙이며 의학적인 위험 기준이 아닙니다.</p>' +
-      '<h3>회전·가려짐이 있으면</h3><p>머리가 옆으로 크게 돌아가면 2차원 각도가 왜곡됩니다. 해당 장면은 판독 불가로 표시하세요. 전체 영상에서 숙임 진입·복귀를 확인할 수 없다면 총횟수와 합계 시간을 입력하지 않습니다. A에서만 판독 불가가 많으면 남은 값만으로 A·B 차이를 단정하지 않습니다.</p>' +
-      '<p><a href="https://www.kinovea.org/help/en/measurement/angle.html" target="_blank" rel="noopener">Kinovea 각도 측정 도움말</a> · <a href="https://www.mdpi.com/2813-0464/2/3/27" target="_blank" rel="noopener">사진 기반 머리 자세 측정 연구</a></p></div></details>';
+    return '<details class="measurement-help"><summary>촬영 후 무엇을 어떻게 측정하나요?</summary><div class="help-body">' +
+      '<h3>핵심: 행동과 자세를 아홉 시점에서 기록</h3><p>선택한 시행의 실제 입력시간 중 10%부터 90%까지 아홉 장면을 봅니다. 손가락이 키를 누르는 행동이 보이면 키 입력, 누르는 행동이 멈춰 있으면 비입력입니다. 탐색·기억·대조 같은 머릿속 과정을 영상으로 확정하지 않습니다. 행동이 겹치거나 불명확하면 혼합·구분 불가로 기록합니다.</p><p>머리는 중립에 가까움, 숙임, 회전, 숙임+회전, 판독 불가로 기록합니다. 숙임은 기준 모습보다 머리 앞쪽이 분명히 아래로 기울어진 상태이고, 눈만 아래로 움직인 경우는 제외합니다. 기준 예시를 조원끼리 맞춘 뒤 일부 영상을 두 사람이 따로 기록해 일치 여부를 확인하세요.</p>' +
+      '<h3>핵심: 행동 단계별 RULA 평가표</h3><p>각 행동에서 가장 많이 관찰된 머리 자세 범주의 최초 장면을 대표 장면으로 사용합니다. 동률이면 먼저 나온 범주를 선택합니다. 이 선정 기준은 머리 자세 표본에 근거하므로 전신의 가장 흔한 자세나 최악 자세라고 해석하지 않습니다.</p><p>RULA는 목 점수만으로 완성되지 않습니다. 위팔·아래팔·손목·비틀림·목·몸통·다리 지지, 근육 사용·하중을 확인한 뒤 공식 표 A·B·C로 총점을 구하세요. 사이트에는 최종점수와 목·몸통·손목 점수를 옮겨 적고 완성한 평가표를 따로 보관합니다. 같은 시각의 보조 영상을 사용할 수 있지만 다른 시행이나 다른 자세의 신체 부위를 섞어 한 점수를 만들지 않습니다. 필수 부위가 안 보이면 평가 불가로 남깁니다.</p>' +
+      '<h3>보조: 기준 대비 머리 기울기 변화</h3>' +
+      '<svg class="angle-diagram" viewBox="0 0 600 170" role="img" aria-label="귀에서 눈으로 향하는 선이 수평선 위면 양수, 아래면 음수로 입력하는 각도 기준"><g fill="none" stroke-width="3"><path d="M45 80h200M345 80h200" stroke="#a2b5c3" stroke-dasharray="5 5"/><path d="M70 80l125-35M370 80l125 48" stroke="#185485"/></g><g fill="#e68537"><circle cx="70" cy="80" r="6"/><circle cx="370" cy="80" r="6"/></g><g fill="#209b98"><circle cx="195" cy="45" r="6"/><circle cx="495" cy="128" r="6"/></g><g fill="#18293a" font-size="17"><text x="58" y="110">귀</text><text x="193" y="33">눈</text><text x="65" y="150">눈이 수평선 위: +각도</text><text x="358" y="110">귀</text><text x="510" y="135">눈</text><text x="355" y="160">눈이 수평선 아래: −각도</text></g></svg>' +
+      '<p>측면의 같은 쪽 귀 이주에서 눈 바깥쪽 끝으로 선을 그어 수평선과의 각도를 잽니다. 눈이 위면 양수, 아래면 음수입니다. 기준 사진과 시행의 25%·50%·75% 시점을 같은 방법으로 재면 사이트가 기준 각도−작업 각도로 변화를 계산합니다. 몸통 움직임도 섞이므로 목 관절만의 굽힘각이나 RULA 목 점수로 자동 환산하지 않습니다. 고개가 옆으로 돌아가거나 기준점이 가려진 장면은 판독 불가로 표시합니다.</p>' +
+      '<h3>보조: 관찰상 숙임 구간 수와 합계 시간</h3><p>세 장의 사진이나 아홉 장면을 세지 말고 영상 전체를 봅니다. 기준 모습보다 머리가 분명히 아래로 기울어진 상태가 1초 이상이면 숙임 구간 시작, 중립에 가까운 모습으로 1초 이상 복귀하면 종료합니다. 시작·종료 조건을 확인한 후 처음 진입·복귀한 시각을 기록합니다. 같은 자세로 계속 숙이고 있으면 1구간입니다. 시작부터 이미 숙인 상태도 1초 이상 보이면 1구간으로 세고 별도로 표시합니다. 마지막까지 이어지면 종료 안내음까지만 기록합니다.</p><p>각 구간의 시작~종료 시간을 더해 합계 시간을 입력합니다. 1초는 짧은 흔들림을 제외하는 본 실험의 관찰 규칙입니다. 이 값은 특정 각도 이상 노출시간이나 임상적 위험 기준이 아닙니다. 영상이 끊기거나 진입·복귀가 안 보이면 전체 구간 수·합계 시간은 결측으로 남깁니다. 정확한 각도를 못 잰 것과 육안으로 구간을 구분할 수 없는 것은 별개입니다.</p>' +
+      '<h3>예비 확인과 기록 보관</h3><p>본실험 전 조원 1명으로 A·B를 찍어 머리·팔·손목·발 지지까지 평가 가능한지 확인하세요. 구도는 이후 참가자에게도 같은 기준을 적용합니다. 일부 영상·평가표를 다른 조원이 독립적으로 기록해 차이를 확인하고, 측정 시점·평가표·판독 불가 사유를 보관합니다. 영상과 사진을 이 웹사이트에 업로드할 필요는 없습니다.</p>' +
+      '<p><a href="https://www.ergo.human.cornell.edu/Pub/AHquest/RULAworksheet.pdf" target="_blank" rel="noopener">RULA 평가표</a> · <a href="https://www.kinovea.org/help/en/measurement/angle.html" target="_blank" rel="noopener">측면 각도 측정 도움말</a> · <a href="./study-plan.html">보고서 구성과 해석 범위</a></p></div></details>';
   }
   return { image, steps, measurement };
+})();
+
+const postureInstruments = (() => {
+  'use strict';
+  const phaseNames = { typing: '키 입력', non_typing: '비입력', mixed: '혼합', unclear: '구분 불가' };
+  const postureNames = { straight: '중립에 가까움', flexed: '숙임', rotated: '회전', flexed_rotated: '숙임+회전', unclear: '판독 불가' };
+  const previousFrames = new Map();
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
+  const options = values => '<option value="">선택</option>' + values.map(([value, label]) => '<option value="' + value + '">' + label + '</option>').join('');
+  const numeric = (name, label, minimum, maximum, optional = false) => '<label class="measure-field"><span>' + label + '</span><input type="number" name="' + name + '" min="' + minimum + '" max="' + maximum + '" step="1" inputmode="numeric"' + (optional ? '' : ' required') + '></label>';
+  function globalFields() {
+    return '<section class="card baseline-card"><h2>자세 평가 기록자</h2><p class="muted">영상 관찰과 RULA는 참가자 또는 조원이 실험 후 기록합니다. 같은 평가 기준과 같은 신체 측을 A·B에 적용하세요.</p><div class="measure-grid">' +
+      '<label class="measure-field">기록자 코드<input type="text" name="assessor_code" maxlength="40" autocomplete="off"></label>' +
+      '<label class="measure-field">RULA 평가 측<select name="rated_side">' + options([['right', '오른쪽'], ['left', '왼쪽']]) + '</select></label>' +
+      '<label class="measure-field">재평가자 코드 · 다른 사람이 재평가할 때만<input type="text" name="recheck_assessor_code" maxlength="40" autocomplete="off"></label></div></section>';
+  }
+  function scanForm(condition) {
+    const code = condition.condition;
+    return '<section class="scan-section"><h3>핵심 1 · 고정된 아홉 시점의 행동과 자세</h3><p>시작 안내음부터 아래 시점의 장면을 확인하세요. <strong>키를 누르는 동작이 보이면 키 입력</strong>, 누르는 동작이 멈춰 있으면 비입력입니다. 비입력에는 탐색·대조·대기가 섞일 수 있으므로 원본 읽기와 같다고 단정하지 않습니다.</p>' +
+      '<p class="muted">숙임은 기준 모습보다 머리 앞쪽이 분명히 아래로 기울어진 상태, 회전은 고개가 좌우로 돌아간 상태입니다. 눈만 아래로 움직인 것은 숙임으로 세지 않습니다. 고개를 돌려 정확한 각도를 못 재더라도 회전 범주는 기록할 수 있습니다. 애매한 장면은 판독 불가를 선택하세요.</p>' +
+      '<div class="table-scroll"><table class="scan-table"><thead><tr><th scope="col">시점</th><th scope="col">관찰 행동</th><th scope="col">머리 자세</th></tr></thead><tbody>' + observationModel.scanTimes(condition.elapsed).map((time, index) =>
+        '<tr><th scope="row">' + (index + 1) * 10 + '% · ' + time.toFixed(1) + '초</th><td><select name="' + code + '_scan_phase' + index + '" aria-label="' + code + ' ' + time + '초 관찰 행동" required>' + options(Object.entries(phaseNames)) + '</select></td><td><select name="' + code + '_scan_posture' + index + '" aria-label="' + code + ' ' + time + '초 머리 자세" required>' + options(Object.entries(postureNames)) + '</select></td></tr>').join('') + '</tbody></table></div>' +
+      '<p class="muted">이 표는 관찰 범주 기록이며 각도나 RULA 점수로 자동 환산하지 않습니다. 아홉 장면을 서로 다른 참가자 9명처럼 분석하지 않습니다.</p></section>';
+  }
+  function rulaForm(condition) {
+    const code = condition.condition;
+    return '<section class="rula-section"><h3>핵심 2 · 행동 단계별 대표 장면 RULA</h3><p>아홉 시점 중 행동별로 가장 많이 나타난 자세 범주를 찾고, 그 범주에서 <strong>가장 이른 장면</strong>을 선정합니다. 동률도 먼저 나온 범주를 사용합니다. 해당 장면은 표본에 근거한 대표 장면이며 최악 자세와 구분합니다.</p>' +
+      '<p><a href="https://www.ergo.human.cornell.edu/Pub/AHquest/RULAworksheet.pdf" target="_blank" rel="noopener">RULA 공식 평가표 열기</a> · <a href="https://www.ergo.human.cornell.edu/ahRULA.html" target="_blank" rel="noopener">사용 설명</a></p><p class="muted">평가표에서 위팔·아래팔·손목·비틀림·목·몸통·다리 지지·근육 사용·힘/하중을 모두 평가하고 표 A·B·C로 총점을 구하세요. 이 기록지는 평가표를 대신 계산하지 않습니다. 정면 보조 영상은 같은 시각의 회전·지지 상태 확인에 사용할 수 있습니다. 필수 부위가 보이지 않으면 평가 불가로 남깁니다.</p>' +
+      observationModel.phases.map(phase => {
+        const prefix = code + '_' + phase;
+        return '<fieldset class="rula-stage"><legend>' + phaseNames[phase] + ' 단계</legend><p class="representative-label" id="' + prefix + '_frame">관찰표 입력 후 선정 장면이 표시됩니다.</p>' +
+          '<label class="measure-field">평가 상태<select name="' + prefix + '_status" required>' + options([['assessed', '공식 평가표로 평가함'], ['unassessable', '해당 행동이 없거나 필수 부위를 볼 수 없어 평가 불가']]) + '</select></label><div class="rula-values measure-grid">' +
+          numeric(prefix + '_score', 'RULA 최종점수 · 표 C (1~7)', 1, 7) + numeric(prefix + '_neck', '보정 후 목 점수 (1~6)', 1, 6) +
+          numeric(prefix + '_trunk', '보정 후 몸통 점수 (1~6)', 1, 6) + numeric(prefix + '_wrist', '보정 후 손목 점수 (1~4)', 1, 4) +
+          numeric(prefix + '_recheck', '다른 평가자의 최종점수 · 선택 (1~7)', 1, 7, true) + '</div>' +
+          '<label class="checkline"><input type="checkbox" name="' + prefix + '_worksheet"> 신체 각 부위, 근육 사용과 하중을 확인하고 공식 조합표로 최종점수를 구했습니다.</label>' +
+          '<label class="measure-field">평가 불가 사유 또는 보관한 평가표 식별 메모<textarea name="' + prefix + '_note" maxlength="400" rows="2"></textarea></label>' +
+          '<p class="rula-action" id="' + prefix + '_action" aria-live="polite"></p></fieldset>';
+      }).join('') + '</section>';
+  }
+  function collect(form, condition) {
+    const code = condition.condition;
+    const value = name => form.elements.namedItem(name).value;
+    const number = name => value(name).trim() === '' ? null : Number(value(name));
+    const missing = value(code + '_status') === 'missing';
+    const scan = observationModel.scanTimes(condition.elapsed).map((time, index) => ({ time,
+      phase: missing ? 'unclear' : value(code + '_scan_phase' + index), posture: missing ? 'unclear' : value(code + '_scan_posture' + index) }));
+    const assessments = observationModel.phases.map(phase => {
+      const prefix = code + '_' + phase;
+      const status = value(prefix + '_status');
+      const assessed = status === 'assessed';
+      const frame = observationModel.representative(scan, phase);
+      return { phase, status, frameIndex: assessed ? frame?.index ?? null : null,
+        score: assessed ? number(prefix + '_score') : null, neck: assessed ? number(prefix + '_neck') : null,
+        trunk: assessed ? number(prefix + '_trunk') : null, wrist: assessed ? number(prefix + '_wrist') : null,
+        recheck: assessed ? number(prefix + '_recheck') : null, worksheetChecked: assessed && form.elements.namedItem(prefix + '_worksheet').checked,
+        note: value(prefix + '_note').trim() };
+    });
+    return { scan, assessments, countStatus: value(code + '_count_status') };
+  }
+  function synchronize(form, context) {
+    let scored = false;
+    let rechecked = false;
+    for (const condition of context.conditions) {
+      const code = condition.condition;
+      const missing = form.elements.namedItem(code + '_status').value === 'missing';
+      for (let index = 0; index < 9; index++) for (const field of ['phase', 'posture']) {
+        const element = form.elements.namedItem(code + '_scan_' + field + index);
+        element.disabled = missing; element.required = !missing;
+      }
+      const data = collect(form, condition);
+      for (const assessment of data.assessments) {
+        const prefix = code + '_' + assessment.phase;
+        const frame = missing ? null : observationModel.representative(data.scan, assessment.phase);
+        const key = prefix;
+        const changed = previousFrames.has(key) && previousFrames.get(key) !== (frame?.index ?? null);
+        previousFrames.set(key, frame?.index ?? null);
+        const label = document.getElementById(prefix + '_frame');
+        label.textContent = frame ? '선정 장면: ' + frame.time.toFixed(1) + '초 · ' + postureNames[frame.posture] + ' · 최빈 범주의 최초 장면' : '선정 가능한 장면이 없습니다. 관찰표를 확인하거나 평가 불가로 기록하세요.';
+        if (changed) {
+          for (const part of ['score', 'neck', 'trunk', 'wrist', 'recheck']) form.elements.namedItem(prefix + '_' + part).value = '';
+          form.elements.namedItem(prefix + '_worksheet').checked = false;
+          label.textContent += ' · 선정 장면이 바뀌어 점수를 다시 입력해야 합니다.';
+        }
+        const assessed = assessment.status === 'assessed';
+        scored ||= assessed;
+        const enabled = assessed && frame !== null;
+        for (const part of ['score', 'neck', 'trunk', 'wrist', 'recheck']) {
+          const element = form.elements.namedItem(prefix + '_' + part);
+          element.disabled = !enabled; element.required = enabled && part !== 'recheck';
+        }
+        const check = form.elements.namedItem(prefix + '_worksheet');
+        check.disabled = !enabled; check.required = enabled;
+        form.elements.namedItem(prefix + '_note').required = assessment.status === 'unassessable';
+        const score = form.elements.namedItem(prefix + '_score').value;
+        const level = enabled && score !== '' ? observationModel.actionLevel(Number(score)) : null;
+        const messages = { 1: '조치 수준 1 · 해당 관찰 자세에서 즉각 개선 필요성은 낮음', 2: '조치 수준 2 · 추가 조사와 개선 필요성 검토', 3: '조치 수준 3 · 조속한 추가 조사와 개선 필요', 4: '조치 수준 4 · 즉각적인 추가 조사와 개선 필요' };
+        document.getElementById(prefix + '_action').textContent = level ? messages[level] + ' · 질환 발생을 진단하는 점수가 아닙니다.' : 'RULA 점수를 입력하면 조치 수준이 표시됩니다.';
+        rechecked ||= enabled && form.elements.namedItem(prefix + '_recheck').value.trim() !== '';
+      }
+    }
+    form.elements.assessor_code.required = scored;
+    form.elements.rated_side.required = scored;
+    form.elements.recheck_assessor_code.required = rechecked;
+  }
+  return { phaseNames, postureNames, globalFields, scanForm, rulaForm, collect, synchronize };
 })();
 
 (() => {
@@ -324,7 +497,7 @@ const captureGuide = (() => {
     conditions: [{ condition: 'A', repetition: 2, elapsed: 90 }, { condition: 'B', repetition: 2, elapsed: 90 }] };
   if (!context || !/^A(0[1-9]|1[0-9]|20)$/.test(context.participant) || !Array.isArray(context.conditions) || context.conditions.length !== 2 ||
       !context.conditions.every(item => ['A', 'B'].includes(item.condition) && Number.isFinite(item.elapsed) && item.elapsed > 0 && item.elapsed <= 90)) context = null;
-  const draftKey = context ? 'posture-draft-' + (testMode ? 'test-' : '') + context.submissionId : null;
+  const draftKey = context ? 'posture-draft-v2-' + (testMode ? 'test-' : '') + context.submissionId : null;
   let draft = draftKey ? read(draftKey) : null;
   let observationId = draft?.observationId || crypto.randomUUID();
   let sending = false;
@@ -338,11 +511,14 @@ const captureGuide = (() => {
     const code = condition.condition;
     return '<fieldset class="measure-condition"><legend>' + code + ' · ' + (code === 'A' ? '태블릿 원본' : '노트북 원본') + ' / 두 번째 시행</legend>' +
       '<p class="muted">실제 입력시간 <strong>' + condition.elapsed.toFixed(1) + '초</strong>. 시작 안내음을 0초로 보고 아래 시점의 장면을 확인하세요.</p>' +
-      '<label class="measure-field">영상 판독 상태<select name="' + code + '_status" required><option value="">선택해 주세요</option><option value="full">전체 구간과 세 장면 모두 판독 가능</option><option value="partial">일부만 판독 가능 · 총횟수와 시간은 입력하지 않음</option><option value="missing">영상 없음 또는 모든 장면 판독 불가</option></select></label>' +
+      '<label class="measure-field">영상 확보 상태<select name="' + code + '_status" required><option value="">선택해 주세요</option><option value="full">시작~종료 전체 구간을 확인할 수 있음</option><option value="partial">일부 누락 또는 가려짐이 있음</option><option value="missing">영상 없음 또는 관찰 불가</option></select></label>' +
+      postureInstruments.scanForm(condition) + postureInstruments.rulaForm(condition) +
+      '<h3 class="supplement-heading">보조 1 · 측면 영상의 세 시점 각도</h3><p class="muted">아래 각도는 정밀 계측을 대신하는 주 지표가 아닙니다. 같은 쪽 귀와 눈이 측면으로 보이는 장면만 재고, 회전·가려짐이 있으면 판독 불가를 선택하세요.</p>' +
       '<div class="sample-grid">' + observationModel.sampleTimes(condition.elapsed).map((time, index) => '<div class="sample-card"><strong>' + ['25%', '50%', '75%'][index] + ' 시점 · ' + time.toFixed(1) + '초</strong>' +
         field(code + '_angle' + index, '귀→눈 선의 각도 (°)', 'min="-90" max="90"') +
         '<label class="checkline"><input type="checkbox" name="' + code + '_unreadable' + index + '"> 이 장면은 판독 불가</label></div>').join('') + '</div>' +
-      '<div class="episode-fields" data-episodes="' + code + '"><h3>영상 전체를 보고 입력</h3><p class="muted">세 장의 사진 수를 세지 말고, 시작·복귀 규칙에 따라 영상 전체의 숙임 구간을 세어 주세요.</p><div class="measure-grid">' +
+      '<div class="episode-fields" data-episodes="' + code + '"><h3>보조 2 · 영상 전체의 숙임 구간</h3><p class="muted">기준 모습과 비교해 머리가 분명히 아래로 기울어진 상태가 1초 이상 이어지면 시작, 중립에 가까운 모습으로 1초 이상 복귀하면 종료합니다. 같은 자세 유지 중에는 여러 번 세지 않습니다. 이 값은 20° 임계값을 넘은 횟수가 아닌 관찰상 숙임 구간 수입니다.</p>' +
+      '<label class="measure-field">구간 수·시간 판독 가능 여부<select name="' + code + '_count_status" required><option value="">선택해 주세요</option><option value="available">전체 영상에서 숙임 시작·복귀를 판독할 수 있음</option><option value="unavailable">판독할 수 없음 · 구간 수와 시간은 결측</option></select></label><div class="measure-grid">' +
       field(code + '_episodes', '숙임 구간 수 (회)', 'min="0" max="500" step="1"') +
       field(code + '_seconds', '숙임 구간 합계 시간 (초)', 'min="0" max="' + condition.elapsed + '"') +
       '<label class="measure-field">영상 시작부터 이미 숙인 상태였나요?<select name="' + code + '_started"><option value="">선택해 주세요</option><option value="no">아니요</option><option value="yes">예 · 시작부터 이어진 구간 1회 포함</option></select></label></div></div>' +
@@ -351,15 +527,15 @@ const captureGuide = (() => {
   }
   function render() {
     app.innerHTML = '<div class="observation-page"><div class="stephead"><h1>사진·영상 측정 기록</h1><span class="phase">실험 후 입력</span></div>' +
-      '<p class="lead">촬영 안내대로 남긴 사진과 영상을 보며 실제 측정값만 입력하세요. 사진·영상 파일은 휴대폰에 보관하며 이 페이지에서 업로드하지 않습니다.</p>' +
+      '<p class="lead">아홉 시점의 행동·자세 관찰과 단계별 RULA 평가를 기록하고, 각도·숙임 구간을 보조 지표로 입력합니다. 사진·영상은 직접 촬영해 보관하고 이곳에는 관찰값만 입력하세요.</p><p class="plan-link"><a href="./study-plan.html">이 주제의 적합성 평가와 10쪽 보고서 구성 보기</a></p>' +
       '<details class="capture-overview"' + (!context ? ' open' : '') + '><summary>언제 무엇을 촬영하나요?</summary><div class="capture-layout">' + captureGuide.image() + '<div>' + captureGuide.steps() + '</div></div></details>' +
       captureGuide.measurement() + (context ? '<div class="record-context">참가자 <strong>' + esc(context.participant) + '</strong> · 시드 <strong>' + esc(context.seed) + '</strong> · ' + (testMode ? '테스트: 실제 응답은 전송하지 않습니다.' : '기존 실험 결과와 같은 제출 번호로 연결됩니다.') + '</div>' +
       '<form id="observation-form" autocomplete="off"><section class="card baseline-card"><h2>시작 전 사진 · 기준 각도</h2><p class="muted">정면 표적을 편하게 본 사진에서 귀→눈 선과 수평선 사이의 각도를 잽니다. 눈이 위면 양수, 아래면 음수로 입력하세요.</p>' +
       '<div class="measure-grid"><label class="measure-field">기준 사진 판독 상태<select name="baseline_status" required><option value="">선택해 주세요</option><option value="measured">각도 측정 가능</option><option value="unavailable">사진 없음 또는 판독 불가</option></select></label>' +
       field('baseline_angle', '기준 사진의 각도 (°)', 'min="-90" max="90"') + '</div><label class="measure-field"><span>기준 사진 메모 · 판독 불가인 경우 사유</span><textarea name="baseline_note" maxlength="400" rows="2"></textarea></label></section>' +
-      context.conditions.map(conditionForm).join('') +
+      postureInstruments.globalFields() + context.conditions.map(conditionForm).join('') +
       '<section class="card measure-finish"><p>빈칸은 0으로 저장하지 않습니다. 숙임이 실제로 없었다면 구간 수와 합계 시간에 각각 0을 직접 입력하세요. 판독 불가는 결측으로 기록합니다.</p><p class="muted">각도 변화는 머리 기울기의 영상 관찰값이며 목 관절만의 굽힘각이나 RULA 총점이 아닙니다. A·B 요약은 참가자별로 비교하세요.</p>' +
-      '<div class="actions"><button class="primary" type="submit"' + (!testMode && !context.test ? ' disabled' : '') + '>' + (testMode || context.test ? '입력 확인 · 테스트' : '측정값 전송') + '</button><button class="secondary" id="download-csv" type="button">측정값 CSV 다운로드</button></div><p class="status" id="receiver-status" role="status"></p><p class="status" id="draft-status" role="status"></p><p id="submit-status" role="status"></p><p class="error" id="form-error" role="alert"></p></section></form>' :
+      '<div class="actions"><button class="primary" id="download-csv" type="button">기록 확인 · CSV 다운로드</button><button class="secondary" type="submit"' + (!testMode && !context.test ? ' disabled' : '') + '>' + (testMode || context.test ? '입력 확인 · 테스트' : '온라인 전송') + '</button></div><p class="status" id="receiver-status" role="status"></p><p class="status" id="draft-status" role="status"></p><p id="submit-status" role="status"></p><p class="error" id="form-error" role="alert"></p></section></form>' :
       '<section class="card baseline-card"><h2>실험 결과와 연결하기</h2><p>본 실험을 끝낸 화면에서 <strong>사진·영상 측정값 입력</strong>을 누르면 참가 번호, 시드와 작업시간이 연결된 빈 기록지가 열립니다. 실험한 같은 브라우저에서 다시 열어 주세요.</p><div class="actions"><a class="primary" href="./index.html">실험 화면 열기</a></div></section>') + '</div>';
     if (!context) return;
     const form = document.getElementById('observation-form');
@@ -396,17 +572,20 @@ const captureGuide = (() => {
     const value = name => form.elements.namedItem(name).value;
     const baseline = { status: value('baseline_status'), angle: value('baseline_status') === 'measured' ? number('baseline_angle') : null, note: value('baseline_note').trim() };
     return { kind: 'posture_observation', observationVersion: observationModel.version, observationId, submissionId: context.submissionId,
-      participant: context.participant, seed: context.seed, baseline,
+      participant: context.participant, seed: context.seed, baseline, countRule: 'visual_flexion_bout_v2',
+      assessorCode: value('assessor_code').trim(), recheckAssessorCode: value('recheck_assessor_code').trim(), ratedSide: value('rated_side'),
       conditions: context.conditions.map(condition => {
         const code = condition.condition;
         const status = value(code + '_status');
-        return { ...condition, status, note: value(code + '_note').trim(),
+        const instruments = postureInstruments.collect(form, condition);
+        const countable = instruments.countStatus === 'available';
+        return { ...condition, status, note: value(code + '_note').trim(), ...instruments,
           samples: observationModel.sampleTimes(condition.elapsed).map((time, index) => {
             const unreadable = status === 'missing' || form.elements.namedItem(code + '_unreadable' + index).checked;
             return { time, unreadable, angle: unreadable ? null : number(code + '_angle' + index) };
-          }), episodes: status === 'full' ? number(code + '_episodes') : null,
-          flexionSeconds: status === 'full' ? number(code + '_seconds') : null,
-          startedFlexed: status === 'full' ? value(code + '_started') || null : null };
+          }), episodes: countable ? number(code + '_episodes') : null,
+          flexionSeconds: countable ? number(code + '_seconds') : null,
+          startedFlexed: countable ? value(code + '_started') || null : null };
       }) };
   }
   function synchronize() {
@@ -415,9 +594,11 @@ const captureGuide = (() => {
     form.elements.baseline_angle.disabled = !measured;
     form.elements.baseline_angle.required = measured;
     form.elements.baseline_note.required = form.elements.baseline_status.value === 'unavailable';
+    postureInstruments.synchronize(form, context);
     for (const condition of context.conditions) {
       const code = condition.condition;
       const status = form.elements.namedItem(code + '_status').value;
+      const countable = form.elements.namedItem(code + '_count_status').value === 'available';
       for (let index = 0; index < 3; index++) {
         const unavailable = form.elements.namedItem(code + '_unreadable' + index);
         unavailable.disabled = status === 'missing';
@@ -427,18 +608,19 @@ const captureGuide = (() => {
       }
       for (const suffix of ['episodes', 'seconds', 'started']) {
         const element = form.elements.namedItem(code + '_' + suffix);
-        element.disabled = status !== 'full';
-        element.required = status === 'full';
+        element.disabled = !countable;
+        element.required = countable;
         element.setCustomValidity('');
       }
-      form.elements.namedItem(code + '_note').required = ['partial', 'missing'].includes(status);
+      form.elements.namedItem(code + '_note').required = ['partial', 'missing'].includes(status) || form.elements.namedItem(code + '_count_status').value === 'unavailable';
       const state = collect();
       const block = state.conditions.find(item => item.condition === code);
       const summary = observationModel.summary(state.baseline, block);
       const fmt = (value, suffix) => value === null || !Number.isFinite(value) ? '입력 전' : value.toFixed(1) + suffix;
-      document.getElementById(code + '-summary').textContent = '숙임각 변화 중앙값 ' + fmt(summary.median, '°') +
-        ' · 유효 장면 ' + summary.sampleCount + '/3' +
-        (status === 'full' ? ' · 분당 구간 수 ' + fmt(block.episodes === null ? null : summary.episodesPerMinute, '회') + ' · 구간 시간 비율 ' + fmt(block.flexionSeconds === null ? null : summary.flexionPercent, '%') : ' · 총횟수·시간 미산출');
+      document.getElementById(code + '-summary').textContent = '관찰 표본의 숙임 비율 ' + fmt(summary.flexedScanPercent, '%') + ' · 회전 비율 ' + fmt(summary.rotatedScanPercent, '%') +
+        ' · 유효 관찰 ' + summary.scanCount + '/9 · 보조 숙임각 변화 중앙값 ' + fmt(summary.median, '°') +
+        ' · 유효 각도 ' + summary.sampleCount + '/3' +
+        (countable ? ' · 분당 구간 수 ' + fmt(summary.episodesPerMinute, '회') + ' · 구간 시간 비율 ' + fmt(summary.flexionPercent, '%') : ' · 총횟수·시간 미산출');
     }
   }
   function saveDraft() {
@@ -456,11 +638,11 @@ const captureGuide = (() => {
     if (!form.reportValidity()) return null;
     const record = collect();
     for (const block of record.conditions) {
-      if (block.status !== 'full') continue;
-      if (record.baseline.status !== 'measured' || block.samples.some(sample => sample.unreadable)) {
-        error.textContent = block.condition + ': 기준 사진과 영상 전체를 판독할 수 있어야 총횟수·시간을 입력할 수 있습니다. 일부 판독 가능으로 바꾸거나 판독 상태를 확인하세요.';
-        return null;
+      for (const assessment of block.assessments) if (assessment.status === 'assessed' && assessment.frameIndex === null) {
+        error.textContent = block.condition + ': 해당 행동 단계의 선정 장면이 없습니다. 관찰표를 확인하거나 RULA 평가 불가로 기록하세요.'; return null;
       }
+      if (block.countStatus !== 'available') continue;
+      if (block.status !== 'full') { error.textContent = block.condition + ': 영상이 일부 누락됐다면 전체 구간 수·시간은 결측으로 남겨 주세요.'; return null; }
       if ((block.episodes === 0 && block.flexionSeconds !== 0) || (block.episodes > 0 && block.flexionSeconds < block.episodes) || (block.startedFlexed === 'yes' && block.episodes === 0)) {
         error.textContent = block.condition + ': 횟수와 합계 시간을 확인하세요. 구간마다 1초 이상이어야 하며, 시작부터 숙였다면 그 구간 1회를 포함합니다.';
         return null;
@@ -499,7 +681,7 @@ const captureGuide = (() => {
   function download() {
     const record = verifiedRecord();
     if (!record) return;
-    const headers = ['participant', 'seed', 'submission_id', 'observation_id', 'observation_version', 'condition', 'repetition', 'elapsed_seconds', 'baseline_status', 'baseline_angle', 'baseline_note', 'video_status', 'sample_seconds', 'sample_angles', 'angle_changes', 'median_angle_change', 'valid_samples', 'sample_above20_percent', 'episodes', 'started_flexed', 'flexion_episode_seconds', 'episodes_per_minute', 'episode_time_percent', 'note'];
+    const headers = ['participant', 'seed', 'submission_id', 'observation_id', 'observation_version', 'condition', 'repetition', 'elapsed_seconds', 'baseline_status', 'baseline_angle', 'baseline_note', 'video_status', 'sample_seconds', 'sample_angles', 'angle_changes', 'median_angle_change', 'valid_samples', 'sample_above20_percent', 'episodes', 'started_flexed', 'flexion_episode_seconds', 'episodes_per_minute', 'episode_time_percent', 'note', 'count_rule', 'count_status', 'assessor_code', 'rated_side', 'recheck_assessor_code', 'posture_scan', 'valid_scan', 'flexed_scan_percent', 'rotated_scan_percent', 'stage_assessments'];
     const cell = value => {
       let text = value === null || value === undefined ? '' : String(value);
       if (typeof value === 'string' && /^[=+\-@\t\r]/.test(text)) text = "'" + text;
@@ -510,8 +692,10 @@ const captureGuide = (() => {
       return [record.participant, record.seed, record.submissionId, record.observationId, record.observationVersion, condition.condition,
         condition.repetition, condition.elapsed, record.baseline.status, record.baseline.angle, record.baseline.note, condition.status,
         JSON.stringify(condition.samples.map(sample => sample.time)), JSON.stringify(condition.samples.map(sample => sample.angle)),
-        JSON.stringify(summary.changes), summary.median, summary.sampleCount, summary.above20Percent, condition.episodes, condition.startedFlexed,
-        condition.flexionSeconds, summary.episodesPerMinute, summary.flexionPercent, condition.note];
+        JSON.stringify(summary.changesBySample), summary.median, summary.sampleCount, summary.above20Percent, condition.episodes, condition.startedFlexed,
+        condition.flexionSeconds, summary.episodesPerMinute, summary.flexionPercent, condition.note, record.countRule, condition.countStatus,
+        record.assessorCode, record.ratedSide, record.recheckAssessorCode, JSON.stringify(condition.scan), summary.scanCount, summary.flexedScanPercent,
+        summary.rotatedScanPercent, JSON.stringify(condition.assessments.map(assessment => ({ ...assessment, actionLevel: observationModel.actionLevel(assessment.score) })))];
     });
     const blob = new Blob(['\uFEFF' + [headers, ...rows].map(row => row.map(cell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
